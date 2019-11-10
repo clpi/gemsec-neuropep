@@ -1,2 +1,2 @@
 # gemsec-neuropep
-Neuropeptide graphene-binding prediction project
+This is the repository for the GEMSEC neuropeptide prediction project. The overarching goal of this project is to develop several independent techniques to select candidate peptides utilizing signal processing and statistical clustering techniques, and to better understand the underlying signal transduction mechanism which lies at the basis of such solid-surface assembly, using known graphene-binding peptides and their feature sets as a basis.
