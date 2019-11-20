@@ -2,7 +2,8 @@
 """
 @author: Aaron Tsang
 """
-import math
+import pywt 
+import cmath as math
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics as stat
@@ -14,26 +15,49 @@ xaxis = []
 cross = []
 
 # amino sequence -> EIIP -> fft
-seq = ['PALPEDGGSGAFPPGHFKDPKRLYCKNGGFFLRIHPDGRVDGVREKSDPHIKLQLQAEERGWSIKGVCANRYLAMKEDGRLLASKCVTDECFFFERLESNNYNTYRSRKYSSWYVALKRTGQYKLGPKTGPGQKAILFLPMSAKS',
-       'FNLPLGNYKKPKLLYCSNGGYFLRILPDGTVDGTKDRSDQHIQLQLCAESIGEVYIKSTETGQFLAMDTDGLLYGSQTPNEECLFLERLEENHYNTYISKKHAEKHWFVGLKKNGRSKLGPRTHFGQKAILFLPLPVSSD']
+seq = ['PALPEDGGSGAFPPGHFKDPKRLYCKNGGFFLRIHPDGRVDGVREKSDPHIKLQLQAEERGWSIKGVCANRYLAMKEDGRLLASKCVTDECFFFERLESNNYNTYRSRKYSSWYVALKRTGQYKLGPKTGPGQKAILFLPMSAKS']
+      # 'FNLPLGNYKKPKLLYCSNGGYFLRILPDGTVDGTKDRSDQHIQLQLCAESIGEVYIKSTETGQFLAMDTDGLLYGSQTPNEECLFLERLEENHYNTYISKKHAEKHWFVGLKKNGRSKLGPRTHFGQKAILFLPLPVSSD']
 newpep = []
 result = {}
 
 xaxis = []
-for i in range(0, len(seq[0])):
-    xaxis.append((i/145)/2)
+for i in range(0, int((len(seq[0])/2) + 1)):
+    xaxis.append((i/len(seq[0])/2)/2)
     #xaxis.append(i)
     
 newpep = []
 
-# take the fourier transform, then the real part of the EIIP
+# from amino acids to EIIP value
 for nums in seq[0]:
     newpep.append(EIIP[AA.index(nums)])
-    result[seq[0]] = newpep
+    result[seq[0]] = pywt.dwt(newpep, 'db1')
+
+
+#
+#pep2 = []
+#holder = 0
+#for nums in range(0, len(seq[0])):
+#   if(nums % 2 == 0):
+#        pep2.append(abs(result[seq[0]][nums] * math.exp((1j ** -1) * ((2 * math.pi)/len(seq[0])) * holder * holder).real))
+#        holder = holder + 1
+#        
+
+
+
+final = []
+for amino in result[seq[0]]:
+    final.append(amino/max(result[seq[0]]))
+result[seq[0]] = final
     
-newpep = []
-for nums in result[seq[0]]:
-    newpep.append(nums * math.exp())
+
+#
+#
+plt.plot(xaxis, result[seq[0]])
+#plt.title("with norm = ortho")
+#plt.savefig("test.png")
+
+
+
     
 
 
