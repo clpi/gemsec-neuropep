@@ -3,9 +3,7 @@
 """
 
 import pandas as pd 
-import numpy as np 
-
-missing = set()
+import numpy as np
 
 def numerical_conversion(sequence):
 	clusterToNum = {
@@ -44,9 +42,7 @@ def main():
 	
 	df_proteins = pd.read_csv('Organized_NPS.csv')
 	df_proteins['Sequences '] = df_proteins['Sequences '].apply(numerical_conversion)
-	df_proteins['Sequences '] = df_proteins['Sequences '].apply(str)
 	df_proteins.to_csv('NPS_Numerical_Codes.csv')
-	print(missing)
 
 if __name__ == "__main__":
 	main()
