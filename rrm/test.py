@@ -44,3 +44,4 @@ pep2 = newpep
 
 plt.plot(xaxis, pep2)
 plt.ylim(0,1)
+plt.savefig("final.png")
