@@ -33,7 +33,7 @@ def PAM_similarity_score(code, reference):
 				intersect = df_pam.iloc[row, col]
 				score += intersect
 				i += 1
-		return float((perfect_match - lowest_match) / score)
+		return float(((score + abs(lowest_match)) / (perfect_match + abs(lowest_match))) * 100)
 	else:
 		return ""
 
