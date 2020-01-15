@@ -22,9 +22,17 @@ def pep_to_dft(peptide):
         final_value.append(aa / max(dft_value))
     return final_value
 
+def average(dictionary, index, length):
+    result = 0
+    for i in range(0, length):
+        result += dict2[i][index]
+    return result / length
+        
+
         
 
 GRBP = 'IMVTESSDYSSY'
+wildType = 'IMVTASSAYDDY'
 subset = []
 with open ('9_17mers.csv') as csv_file:
     csv_reader = csv.reader(csv_file, delimiter = ",")
@@ -40,33 +48,35 @@ for peptides in range(0, len(subset)):
     dict.append(pep_to_dft(subset[peptides]))
 
 grbp_dft = pep_to_dft(GRBP)
+wildType_dft = pep_to_dft(wildType)
 
 
 dict2 = []
 for peptides in range(0, len(dict)):
     for aa in range(0, len(dict[peptides])):
         temp = dict[peptides][aa] * np.conj(grbp_dft[aa])
+        temp2 = dict[peptides][aa] * np.conj(wildType_dft[aa])
         cross_spec = []
-        cross_spec.append((float)(math.sqrt( (temp.real)** 2 + (temp.imag)** 2)))
-    dict2.append(cross_spec[0])
+        cross_spec.extend([(float)(math.sqrt( (temp.real)** 2 + (temp.imag)** 2)), (float)(math.sqrt( (temp2.real)** 2 + (temp2.imag)** 2))])
+    dict2.append(cross_spec)
     
 dict3 = []
 
 # Calculate for S/N ratio as specified in the book
 for peptides in range(0, len(dict2)):
-    if(dict2[peptides]/(sum(dict2) / len(dict2)) > 20.0):
+    #if(dict2[peptides]/(sum(dict2) / len(dict2)) > 20.0):
         toWrite = []
-        toWrite.extend([dict2[peptides], subset[peptides]])
+        toWrite.extend([subset[peptides], dict2[peptides][0]/average(dict2, 0, len(dict2)), dict2[peptides][1] / average(dict2, 1, len(dict2))])
         dict3.append(toWrite)
         
 # Saving CSV file
 with open('set1.csv', 'w', newline = '') as write:
     csv_writer = csv.writer(write)
     
-    csv_writer.writerow(['Peptide', 'Similarity score'])
+    csv_writer.writerow(['Peptide', 'Similarity score (GRBP5)', 'Similarity score (Wild Type)'])
     
     for row in dict3:
-        csv_writer.writerow([row[1], row[0]])
+        csv_writer.writerow([row[0], row[1], row[2]])
     
 
 
