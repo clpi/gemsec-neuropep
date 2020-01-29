@@ -1,0 +1,371 @@
+\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provides euro and other symbols
+\else % if luatex or xelatex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage[]{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\usepackage{hyperref}
+\hypersetup{
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{longtable,booktabs}
+% Fix footnotes in tables (requires footnote package)
+\IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{longtable}}{}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+% set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+
+
+\date{}
+
+\begin{document}
+
+\hypertarget{gemsec-neuropeptide-docs}{%
+\section{GEMSEC Neuropeptide Docs}\label{gemsec-neuropeptide-docs}}
+
+\textbf{January 28, 2019}
+
+\emph{Chris Pecunies, Aaron, Savvy Gupta}
+
+\emph{Led by: Jacob Rodriguez}
+
+\emph{PI: Mehmet Sarikaya}
+
+\hypertarget{abstract}{%
+\subsection{Abstract}\label{abstract}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+The purpose of this documentation is to serve as a reference for the
+motivation, background, methods, and results of the GEMSEC project to
+discover the method of signal transduction in human neuropeptides, to
+ultimately discover candidate peptides with binding affinity to
+graphene, as well as to illuminate their mechanism of binding.
+
+\hypertarget{introduction}{%
+\subsection{Introduction}\label{introduction}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+The overarching aim of this project is to uncover the mechanism of
+signal transduction in neuropeptides which are experimentally determined
+to bind to graphene. To determine candidate peptides to be experimented
+on, we have utilized three principal methods: cross-sequence entropy,
+PAM30 sequence similarity, and RRM\footnote{dfsdfsfs} relative to two
+known binders, \emph{GrBP5}\footnote{fdsfs} and \emph{M6}\footnote{dfsdfsf}
+
+\hypertarget{background}{%
+\subsection{Background}\label{background}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+While there is extensive literature surrounding the subject of
+peptide-solid binding and its most important determinants, we have
+focused on two primary methods: sequence domain functionality clustering
+and the \emph{Resonant Recognition Model} proposed by Irena Cosic
+\footnote{dfsdfs}.
+
+\hypertarget{methods}{%
+\subsection{Methods}\label{methods}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\hypertarget{rrm}{%
+\paragraph{RRM}\label{rrm}}
+
+The \emph{Resonant Recognition Model}, or RRM, is a method proposed by
+Irena Cosic for the analysis of peptides and proteins. The model assumes
+electron-ion interaction potential (EIIP, hereafter) along the backbone
+of amino acid chains to be the most significant deteriminant in a
+peptide or protein's biochemical phenomenological features. For each
+amino acid, a unique scalar EIIP value can be determined, which allows a
+amino acid sequence to be converted to a scalar sequence of EIIP values
+in its most simple form.
+
+\hypertarget{cross-entropy}{%
+\paragraph{Cross entropy}\label{cross-entropy}}
+
+We determined the cross entropy for both the pure amino acid sequences
+as well as the functional domain numerical sequences, which can be found
+in the appendix (and which will be generated in the main program).
+
+\hypertarget{pam30-sequence-similarity}{%
+\paragraph{PAM30 Sequence similarity}\label{pam30-sequence-similarity}}
+
+The PAM (point accepted mutation) matrices, initially developed by
+Margaret Dayhoff\footnote{dsfsdfs} are commonly used in measuring the
+similarity of two peptide or protein sequences. The PAM30 matrix,
+specifically, is a sequence alignment matrix that allows 30 point
+accepted per 100 amino acids. The PAM30 matrix is a ``shallow'' sequence
+alignment matrix, in that it is more appropriate in determining
+alignment for more ``similar'' sequences.
+
+\hypertarget{results}{%
+\subsection{Results}\label{results}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\hypertarget{candidate-peptides}{%
+\paragraph{Candidate peptides}\label{candidate-peptides}}
+
+The five similarity metrics generated for each neuropeptide served as a
+feature set which could be weighted and used to train a regression
+model, but without experimental data, the relative weights for each
+feature were chosen by {[}METHOD{]}.
+
+After forwarding the candidate peptides for experimentation, we utilized
+statistical clustering and signal processing methods to predict
+determinant sequence domains in graphene binding which could then be
+used with the experimental data once acquired.
+
+\hypertarget{experimental-results}{%
+\paragraph{Experimental results}\label{experimental-results}}
+
+After generating the list of {[}NUMBER{]} candidate peptides and
+receiving binding affinity metrics, we were then able to perform several
+statistical methods to ascertain the most influential factors in peptide
+graphene binding.
+
+First, we trained a simple linear regression model, using the gathered
+experimental results as training data, and {[}\ldots{}{]}
+
+\hypertarget{signal-transduction}{%
+\paragraph{Signal transduction}\label{signal-transduction}}
+
+From results gathered from model training, statistical clustering, and
+experimental cross-validation, we were able to identify several sequence
+patterns and corresponding functions which may prove significant.
+{[}\ldots{}{]}
+
+\hypertarget{discussion}{%
+\subsection{Discussion}\label{discussion}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\hypertarget{computational-results}{%
+\paragraph{Computational results}\label{computational-results}}
+
+Our program, using all aforementioned computational methods, generated
+two ``similarity tables'' for 934,235 {[}@TODO: revise this{]}
+neuropeptides: one for GrBP5, and one for the wild-type peptide M6. This
+generated a table of the schema (example data -- replace with top 10-20
+candidate peptides):
+
+\textbf{\emph{Table 1:}} \emph{Output schema of .csv similarity tables}
+
+\begin{longtable}[]{@{}lllllll@{}}
+\toprule
+\textbf{seq} & numseq & rrmsn & rrmcorr & pam30 & numentr &
+aaentr\tabularnewline
+\midrule
+\endhead
+IMVSTED & 1132335 & 73 & 88 & 23 & 45 & 55\tabularnewline
+GTTYUEI & 3224121 & 11 & 5 & 6 & 14 & 13\tabularnewline
+\bottomrule
+\end{longtable}
+
+Where the columns correspond as follows:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{seq}: Original amino acid sequence of the neuropeptide
+\item
+  \textbf{numseq}: The original amino acid sequence converted to numbers
+  corresponding to their biological function as determined by the
+  biological function key-value table\footnote{See table 1 in appendix}
+\item
+  \textbf{rrmsn}: The signal-to-noise ratio of the cross-signal of the
+  EIIP frequency spectum calculated for a given neuropeptide and the
+  sequence of comparison, normalized in the domain {[}0, 100{]}.
+\item
+  \textbf{rrmcor}: The Pearson correlation coefficient between the EIIP
+  frequency spectrum calculated for a given neuropeptide and the
+  sequence of comparison, mapped to the domain {[}0, 100{]}
+\item
+  \textbf{pam30}: The PAM30 similarity score (formula described in
+  methods section); a measure of inverse distance using the PAM30
+  matrix, mapped to {[}0, 100{]}
+\item
+  \textbf{numentr}: The cross-entropy of the numerical sequence
+  represencted by \texttt{numseq}
+\item
+  \textbf{aaentr}: The cross-entropy of the amino acid sequence
+\end{itemize}
+
+From this data, we determined that {[}\ldots{}{]}
+
+\hypertarget{experimental-results-1}{%
+\paragraph{Experimental results}\label{experimental-results-1}}
+
+{[}to be completed after experimentaiton{]}
+
+\hypertarget{clustering-and-signal-analysis}{%
+\paragraph{Clustering and signal
+analysis}\label{clustering-and-signal-analysis}}
+
+After gathering the experimental results, we were then able to apply
+supervised statistical learning techniques to the full set of
+neuropeptides, as well as signal processing techniques. We first
+{[}\ldots{}{]} \#\# How to run \_\_\_ \textbf{Prerequisites}: A computer
+running Windows/Mac OSX/Linux with
+\href{https://www.python.org/}{Python} (3+) installed, and the Python
+libraries \href{https://pandas.pydata.org/}{pandas},
+\href{https://numpy.org/}{NumPy}, and
+\href{https://scikit-learn.org/stable/}{scikit-learn}. For
+visualizations, the library \emph{matplotlib} should be installed. If
+these libraries are not already installed, instructions for their
+installation will be listed below.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Download the \href{http://google.com}{.zip containing all .py files
+  and sample data set} \textbf{{[}!FIX{]}} and extract to preferred
+  location.
+\item
+  Open a terminal and navigate to the directory containing the extracted
+  files
+
+  \begin{enumerate}
+  \def\labelenumii{\arabic{enumii}.}
+  \tightlist
+  \item
+    On Windows, press the Windows key and type ``cmd'', and the press
+    enter. \texttt{dir} lists all files and folders in the working
+    directory, while \texttt{cd\ dirName} changes the working directory
+    to the specified folder (in this case, \texttt{dirname}). To move up
+    the directory hierarchy, type \texttt{cd\ ../}
+  \item
+    On Mac OSX, enter spotlight search with Command + Spacebar and type
+    ``Terminal'', then hit enter. Instructions are the same as for
+    windows, but replace \texttt{dir} with \texttt{ls}.
+  \item
+    On Linux, a terminal is likely easily accessible. Commands are the
+    same as for Mac OSX.
+  \end{enumerate}
+\item
+  When in the directory containing the extracted files, type the
+  following command to generate the ``similarity tables'' for the
+  example dataset: \texttt{python\ main.py\ example\_data.csv}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    This can be run with any .csv sequence file, but it must follow the
+    same schema as the example\_data.csv table provided, and the
+    sequences must all be of the same length relative to each other as
+    well as to the known binder(s) (non length-matching input sequences
+    will be ignored in output)
+  \item
+    \emph{(To implement)} The script accepts as a second argument a
+    sequence (or list of sequences), each of which will generate its own
+    similarity table for the input .csv.
+
+    \begin{itemize}
+    \tightlist
+    \item
+      If no argument is given (as above), it will generate two .csv
+      similarity tables, one for GrBP5 and one for M6. To specify only
+      one .csv output similarity table (for GrBP5), run
+      \texttt{python\ main.py\ example\_data.csv\ grbp5}.
+    \item
+      This can be done for an arbitrary number of different sequences,
+      for example:
+      \texttt{python\ main.py\ example\_data.csv\ IVTSSY\ UVGEASTT\ EEVTUSGMII}
+      will output three .csv tables for peptides in
+      \texttt{example\_data.csv} of lengths corresponding to each
+      sequence specified by the user.
+    \item
+      Finally, the second argument can itself be a .csv of sequences,
+      following the same schema as the first input .csv. In this way,
+      for a .csv entered as a second argument with 10 rows of sequences
+      will generate 10 separate .csv tables.
+    \end{itemize}
+  \end{itemize}
+\item
+  Similarity tables and visualizations will be generated in a folder
+  titled ``output'' located in the same directory as the
+  \texttt{main.py} file.
+\end{enumerate}
+
+\hypertarget{appendix}{%
+\subsection{Appendix}\label{appendix}}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\hypertarget{table-1-aa}{%
+\paragraph{Table 1: AA}\label{table-1-aa}}
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+Function & AA & Num & EIIP\tabularnewline
+\midrule
+\endhead
+Aromatic & F & 0 &\tabularnewline
+Aromatic & Y & 0 &\tabularnewline
+Aromatic & W & 0 &\tabularnewline
+Hydrophobic & A & 1 &\tabularnewline
+Hydrophobic & V & 1 &\tabularnewline
+Hydrophobic & I & 1 &\tabularnewline
+Hydrophobic & L & 1 &\tabularnewline
+Hydrophobic & M & 1 &\tabularnewline
+Polar & S & 2 &\tabularnewline
+Polar & T & 2 &\tabularnewline
+Polar & N & 2 &\tabularnewline
+Polar & Q & 2 &\tabularnewline
+Proline & P & 3 &\tabularnewline
+Glycine & G & 4 &\tabularnewline
+Charge (-) & D & 5 &\tabularnewline
+Charge (-) & E & 5 &\tabularnewline
+Charge (+) & K & 6 &\tabularnewline
+Charge (+) & H & 6 &\tabularnewline
+Charge (+) & R & 6 &\tabularnewline
+Excluded & C & 7 &\tabularnewline
+\bottomrule
+\end{longtable}
+
+\hypertarget{bibliography}{%
+\subsection{Bibliography}\label{bibliography}}
+
+\end{document}

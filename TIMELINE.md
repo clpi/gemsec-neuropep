@@ -1,3 +1,0 @@
-# Neuropeptide Project Timeline
-
-* @TODO
