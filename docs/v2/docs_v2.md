@@ -26,12 +26,19 @@ The overarching aim of this project is to uncover the mechanism of signal transd
 While there is extensive literature surrounding the subject of peptide-solid binding and its most important determinants, we have focused on two primary methods: sequence domain functionality clustering and the *Resonant Recognition Model* proposed by Irena Cosic [^4].
 
 
+The *Resonant Recognition Model*, or RRM, is a method proposed by Irena Cosic for the analysis of peptides and proteins. The model assumes electron-ion interaction potential (EIIP, hereafter) along the backbone of amino acid chains to be the most significant deteriminant in a peptide or protein's biochemical phenomenological features. For each amino acid, a unique scalar EIIP value can be determined, which allows a amino acid sequence to be converted to a scalar sequence of EIIP values in its most simple form.
+
+
 ## Methods
 
 
 #### RRM
 
-The *Resonant Recognition Model*, or RRM, is a method proposed by Irena Cosic for the analysis of peptides and proteins. The model assumes electron-ion interaction potential (EIIP, hereafter) along the backbone of amino acid chains to be the most significant deteriminant in a peptide or protein's biochemical phenomenological features. For each amino acid, a unique scalar EIIP value can be determined, which allows a amino acid sequence to be converted to a scalar sequence of EIIP values in its most simple form.
+The Resonant Recognition Model in particular is a physical signal processing which interprets a protein or peptide's biological function as primarily determined by the corresponding translation numerical sequence of EIIP values, justified by the finding that there is significant correlation between the spectra of an amino acid sequence represented numericaly and its biological activity [^3]. In our computational studies, we have extended the principle underlying Cosic's Resonant Recognition Model to another numerical amino acid mapping, itself a representation of the amino acid's most significant biological characteristic.
+
+From (where?) we used a mapping of the 20 amino acids to seven different categories, specifically: aromatic structure, hydrophobic function, polar structure, proline (itself), glycine (itself), negative charge, positive charge, and Cystine which is excluded (assigned to a separate category from all others, like proline and glycine. With the EIIP and biological function mapping keys, we were able to derive two unique numerical sequences per neuropeptide. From each of these translated sequences, following Irena Cosic's RRM construction, we could then perform a discrete Fourier transform to determine the spectrum of the numerical representation, which generated a characteristic peak in most cases which can be considered to be representative of an amino acid sequence's biological function.
+
+Because our experiment is principally concerned with the relative similarity of sequences to two known graphene-binding peptide sequences (GrBP5 and M6), our initial goal was not to determine the biological function responsible for graphene binding, but to downselect three neuropeptides for experimentation, after which we could apply statistical methods to determine the most likely method of binding in the case where the candidates are successfully selected binding peptides. As such, we followed Cosic's method to determine the cross spectrum of each neuropeptide's EIIP and biological mapping spectra, and generated a cross spectra with the EIIP and biological mapping spectra of GrBP5 and M6. In this cross spectrum, the signal to noise ratio may be considered a primitive measure of "similarity" in biological function between the two peptides, should the RRM be valid in and of itself for determining such a function through characteristic peaks, because the S/N measures the degree to which constructive interference occurs between the two spectra, indicating similar biological function (which, in our case, is the potential to bind to graphene).
 
 #### Cross entropy
 
@@ -43,6 +50,8 @@ The PAM (point accepted mutation) matrices, initially developed by Margaret Dayh
 
 
 ## Results
+
+Fundamentally, our results were calculated on the basis of two well-established similarity matrices (the PAM30 substitution matrix and the BLOSUM substitution matrix) as well as two key-value lookups associating an amino acid with a scalar quantity representing its notable biological function (in the case of the statistical clustering key:value pairing) or its propensity for electron-ion interaction (in the case of EIIP). Since these latter two methods represent our most novel foray into characterizing peptide similarity, we first determined their correlation to one another. Since the biological function mapping is categorical, and the EIIP mapping is continuous, we utilizd the Kendall Tau correlation parameter (commonly used to compare categorical and continuous data) and found these two mappings to have a correlation (tau) of 0.1129 and corresponding p_value of 0.5083, indicating very slight agreement. 
 
 
 #### Candidate peptides
@@ -135,34 +144,33 @@ python main.py example_data.csv`
 
 #### Table 1: AA
 
-| Function    | AA | Num | EIIP |
-|-------------|----|-----|------|
-| Aromatic    | F  | 0   |
-| Aromatic    | Y  | 0   |
-| Aromatic    | W  | 0   |
-| Hydrophobic | A  | 1   |
-| Hydrophobic | V  | 1   |
-| Hydrophobic | I  | 1   |
-| Hydrophobic | L  | 1   |
-| Hydrophobic | M  | 1   |
-| Polar       | S  | 2   |
-| Polar       | T  | 2   |
-| Polar       | N  | 2   |
-| Polar       | Q  | 2   |
-| Proline     | P  | 3   |
-| Glycine     | G  | 4   |
-| Charge (-)  | D  | 5   |
-| Charge (-)  | E  | 5   |
-| Charge (+)  | K  | 6   |
-| Charge (+)  | H  | 6   |
-| Charge (+)  | R  | 6   |
-| Excluded    | C  | 7   |
+| Function    | AA | Num | EIIP   |
+|-------------|----|-----|--------|
+| Aromatic    | F  | 0   | 0.0946 |
+| Aromatic    | Y  | 0   | 0.0516 |
+| Aromatic    | W  | 0   | 0.0548 |
+| Hydrophobic | A  | 1   | 0.0373 |
+| Hydrophobic | V  | 1   | 0.0057 |
+| Hydrophobic | I  | 1   | O.0000 |
+| Hydrophobic | L  | 1   | 0.0000 |
+| Hydrophobic | M  | 1   | 0.0823 |
+| Polar       | S  | 2   | 0.0829 |
+| Polar       | T  | 2   | 0.0941 |
+| Polar       | N  | 2   | 0.0036 |
+| Polar       | Q  | 2   | 0.0761 |
+| Proline     | P  | 3   | 0.0198 |
+| Glycine     | G  | 4   | 0.0050 |
+| Charge (-)  | D  | 5   | 0.1263 |
+| Charge (-)  | E  | 5   | 0.0058 |
+| Charge (+)  | K  | 6   | 0.0371 |
+| Charge (+)  | H  | 6   | 0.0242 |
+| Charge (+)  | R  | 6   | 0.0959 |
+| Excluded    | C  | 7   | 0.0829 |
 
 ## Bibliography
-[^1]: dfsdfsfs
-[^2]: fdsfs
-[^3]: dfsdfsf
-[^4]: dfsdfs
-[^5]: dsfsdfs
-[^6]: See table 1 in appendix
+[1^] https://www.ncbi.nlm.nih.gov/pubmed/7851912 (EIIP representation)
+
+[2^] https://www.aclweb.org/anthology/J06-4002.pdf (kendall tau, nlp, similarity?)
+
+[3^] https://nonlinearbiomedphys.biomedcentral.com/articles/10.1186/1753-4631-1-7
 
