@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+2# -*- coding: utf-8 -*-
 """
 @author: Aaron Tsang
 """
@@ -60,20 +60,24 @@ for peptides in range(0, len(dict)):
         cross_spec.extend([(float)(math.sqrt( (temp.real)** 2 + (temp.imag)** 2)), (float)(math.sqrt( (temp2.real)** 2 + (temp2.imag)** 2))])
     dict2.append(cross_spec)
     
-dict3 = []
-
 # Calculate for S/N ratio as specified in the book
+grbpsn = []
+wildsn = []
 for peptides in range(0, len(dict2)):
-    #if(dict2[peptides]/(sum(dict2) / len(dict2)) > 20.0):
+    grbpsn.append(dict2[peptides][0]/average(dict2, 0, len(dict2)))
+    wildsn.append(dict2[peptides][1] / average(dict2, 1, len(dict2)))
+
+dict3 = []
+for peptides in range(0, len(dict2)):
         toWrite = []
-        toWrite.extend([subset[peptides], dict2[peptides][0]/average(dict2, 0, len(dict2)), dict2[peptides][1] / average(dict2, 1, len(dict2))])
+        toWrite.extend([subset[peptides], round(grbpsn[peptides]/max(grbpsn) * 100, 4), round(wildsn[peptides]/max(wildsn) * 100, 4)])
         dict3.append(toWrite)
         
 # Saving CSV file
 with open('set1.csv', 'w', newline = '') as write:
     csv_writer = csv.writer(write)
     
-    csv_writer.writerow(['Peptide', 'Similarity score (GRBP5)', 'Similarity score (Wild Type)'])
+    csv_writer.writerow(['Peptide', 'S/N Ratio with GRBP (%)', 'S/N Ratio with Wild Type (%)'])
     
     for row in dict3:
         csv_writer.writerow([row[0], row[1], row[2]])
