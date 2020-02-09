@@ -41,55 +41,44 @@ class SequenceSimilarity(object):
         peptides in class peptide dataframe and returns a dataframe
         containing only those peptides containing the sequence
         '''
-        if not {*sub_seq}.issubset({*AA}):
+        if not {*sub_seq}.issubset({*self.AA}):
             raise Exception('Invalid subsequence')
         if ind is None:
             return self.data.filter() #@TODO Implement the filter here
 
-        data_filter = data[AA_COL].apply(lambda s: s[ind:len(dom) == dom])
-        data_with_seq = data[data[AA_COL].filter(data_filter)]
-        return data[data[AA_COL].filter(data_filter)]
+        data_filter = self.data[self.AA_COL].apply(
+            lambda s: s[ind:len(sub_seq) == sub_seq])
+        return data[data[self.AA_COL].filter(data_filter)]
+
+    def get_binder_subseq(self):
+        '''
+        Generates all possible subsequences for binders
+        provided in class constructor
+        '''
+        def gen_all_subseq(seq, sub_seq, i):
+            if i == len(seq):
+                if len(sub_seq) != 0:
+                    yield(sub_seq)
+                else:
+                    gen_all_subseq(seq, sub_seq, sub_seq)
+                gen_all_subseq(seq, sub_seq+[seq[i]], i+1)
+
+        sseq = dict.fromkeys(self.binders)
+        for binder in self.binders:
+            sseq[binder] = [sseq for sseq in list(
+                gen_all_subseq(binder, '', 0))]
+        return sseq
 
     def get_PAM30_similarity(self):
         raise NotImplementedError
 
     def get_BLOSUM_similarity(self):
         raise NotImplementedError
-
+    '''
     def get_RRM_SN_ratio(self):
-        get_eiip_seq = lambda pep: list(map(lambda aa: AA_EIIP[aa], pep))
+        get_eiip_seq = lambda pep: list(map(lambda aa: self.AA_EIIP[aa], pep))
         get_dft_from_eiip = lambda eiip: np.fft.rfft(eiip)[1:]
-        get_cross_spectrum = lambda p1, p2: [x1*x2 for x1, x2 in zip(p1, p2)]
-
-def get_similarity_from_subseq(subseq: str):
-
-"""
-@author: Savvy Gupta
-"""
-
-domain = input("Enter a domain to select for: ")
-index = int(input("Enter index at which domain starts: "))
-
-def domain_selector(sequence):
-
-	subSequence = sequence[index : len(domain)]
-
-	if (subSequence == domain):
-		return sequence
-	else:
-		return "-1"
-
-'''
-def main():
-
-	df_filter = pd.read_csv('NPS_Numerical_Codes.csv', index_col=[0])
-	df_filter['Sequences '] = df_filter['Sequences '].apply(domain_selector)
-	nonDomain = df_filter[df_filter['Sequences '] == '-1'].index
-	df_filter.drop(nonDomain, inplace = True)
-	df_filter.to_csv('NPS_Filtered_Domain_' + str(domain) + '_Start_' + str(index) + '.csv', index=False)
-'''
-
-#-------------------main
+    '''
 def main():
     seq_sim = SequenceSimilarity(PEP_PATH, GRBP5, M6)
 
