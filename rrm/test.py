@@ -2,7 +2,7 @@
 """
 @author: Aaron Tsang
 """
-import pywt 
+#import pywt 
 import numpy as np
 import matplotlib.pyplot as plt
 import statistics as stat
@@ -72,7 +72,7 @@ for peptides in range(0, len(dict2)):
         toWrite = []
         toWrite.extend([subset[peptides], round(grbpsn[peptides]/max(grbpsn) * 100, 4), round(wildsn[peptides]/max(wildsn) * 100, 4)])
         dict3.append(toWrite)
-        
+'''
 # Saving CSV file
 with open('set1.csv', 'w', newline = '') as write:
     csv_writer = csv.writer(write)
@@ -81,10 +81,7 @@ with open('set1.csv', 'w', newline = '') as write:
     
     for row in dict3:
         csv_writer.writerow([row[0], row[1], row[2]])
-    
-
-
-
+'''
 
 
     

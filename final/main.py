@@ -1,34 +1,62 @@
-'''
-Title: main.py placeholder / skeleton program
-Author: Chris Pecunies
-Description: This is the program that will use the statistical PAM30 and cross-entropy similarity calculations (Savvy) and RRM signal-noise and correlation coefficient calculations (Aaron), as well as unsupervized statistical clustering to determine important sequence domains relative to both biological function mapping (provided in documentation) and EIIP mapping (also in docs). 
-'''
-
 import os
 import pandas as pd
 from scipy.stats import kendalltau
 # from scikit-learn import ( ... )
 
 #--------------------const
-AA_CHART = pd.read_csv('data/aa_chart.csv')
+AA = list('LINGVEPHKAYWQMSCTFRD')
+AA_COL = "AA_seq"   #--> Column title for AA sequences in .csv file
+AA_CHART = pd.read_csv('data/aa_chart.csv')   #--> Path of .csv with AA translations
 AA_EIIP = AA_CHART[['AA', 'EIIP']]
 AA_FNDOM = AA_CHART[['AA', 'Num', 'Function']]
 # get corr between EIIP and Bio Num
 EII_FNDOM_CORR, EII_FNDOM_PVAL = kendalltau(AA_CHART[['Num']], AA_CHART[['EIIP']])
 GRBP = 'IMVTESSDYSSY'
-M6 = 'IMVTASSAYDDY
+M6 = 'IMVTASSAYDDY'
 
 #--------------------func
-# @TODO: Implement cross correlation
-# @TODO: Implement RRM (correct) w/ biolog. fn seq
-# @TODO: Investigate kendall tau as a measure of seq sim.
-def get_
+
+def get_sim_df(seq=None):
+    pass
 
 def get_input():
     pass
 
 def process_input(csv_in, *seqs):
     pass
+
+def df_filter_subseq(data: pd.DataFrame, sub_seq: str, ind: int = None):
+    if not {*sub_seq}.issubset({*AA}):
+        raise Exception('Invalid subsequence')
+    if ind is None:
+        return data.filter()
+    return data.filter()
+
+"""
+@author: Savvy Gupta
+"""
+
+domain = input("Enter a domain to select for: ")
+index = int(input("Enter index at which domain starts: "))
+
+def domain_selector(sequence):
+
+	subSequence = sequence[index : len(domain)]
+
+	if (subSequence == domain):
+		return sequence
+	else:
+		return "-1"
+
+'''
+def main():
+
+	df_filter = pd.read_csv('NPS_Numerical_Codes.csv', index_col=[0])
+	df_filter['Sequences '] = df_filter['Sequences '].apply(domain_selector)
+	nonDomain = df_filter[df_filter['Sequences '] == '-1'].index
+	df_filter.drop(nonDomain, inplace = True)
+	df_filter.to_csv('NPS_Filtered_Domain_' + str(domain) + '_Start_' + str(index) + '.csv', index=False)
+'''
 
 #-------------------main
 def main():
