@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 from scipy.stats import kendalltau
 # from scikit-learn import ( ... )
@@ -13,24 +12,24 @@ AA_FNDOM = AA_CHART[['AA', 'Num', 'Function']]
 EII_FNDOM_CORR, EII_FNDOM_PVAL = kendalltau(AA_CHART[['Num']], AA_CHART[['EIIP']])
 GRBP = 'IMVTESSDYSSY'
 M6 = 'IMVTASSAYDDY'
-
+PEP_PATH = 'NPS_Numerical_Codes.csv'
 #--------------------func
-
-def get_sim_df(seq=None):
-    pass
-
-def get_input():
-    pass
-
-def process_input(csv_in, *seqs):
-    pass
 
 def df_filter_subseq(data: pd.DataFrame, sub_seq: str, ind: int = None):
     if not {*sub_seq}.issubset({*AA}):
         raise Exception('Invalid subsequence')
     if ind is None:
         return data.filter()
+
+    def domain_filter(dom, seq, i):
+        return seq[i:len(dom)] == dom
+
+    data_filter = data[AA_COL].apply(lambda s: s[ind:len(dom) == dom]
+    data_with_seq = data[data[AA_COL].filter(data_filter)]
+
     return data.filter()
+
+
 
 """
 @author: Savvy Gupta
