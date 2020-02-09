@@ -2,7 +2,8 @@ import pandas as pd
 from scipy.stats import kendalltau
 # from scikit-learn import ( ... )
 
-#--------------------const
+--------------------const
+
 AA = list('LINGVEPHKAYWQMSCTFRD')
 AA_COL = "AA_seq"   #--> Column title for AA sequences in .csv file
 AA_CHART = pd.read_csv('data/aa_chart.csv')   #--> Path of .csv with AA translations
@@ -13,7 +14,18 @@ EII_FNDOM_CORR, EII_FNDOM_PVAL = kendalltau(AA_CHART[['Num']], AA_CHART[['EIIP']
 GRBP = 'IMVTESSDYSSY'
 M6 = 'IMVTASSAYDDY'
 PEP_PATH = 'NPS_Numerical_Codes.csv'
+
 #--------------------func
+
+class SequenceSimilarity(object):
+
+    def __init__(self, seq_path, *binders):
+        self.binders = [binder for binder in binders]
+        try:
+            self.seq = pd.Dataframe(seq_path, index=AA_COL)
+        except:
+            print("No .csv at that location.")
+
 
 def df_filter_subseq(data: pd.DataFrame, sub_seq: str, ind: int = None):
     if not {*sub_seq}.issubset({*AA}):
@@ -24,12 +36,11 @@ def df_filter_subseq(data: pd.DataFrame, sub_seq: str, ind: int = None):
     def domain_filter(dom, seq, i):
         return seq[i:len(dom)] == dom
 
-    data_filter = data[AA_COL].apply(lambda s: s[ind:len(dom) == dom]
+    data_filter = data[AA_COL].apply(lambda s: s[ind:len(dom) == dom])
     data_with_seq = data[data[AA_COL].filter(data_filter)]
+    return data[data[AA_COL].filter(data_filter)]
 
-    return data.filter()
-
-
+def get_similarity_from_subseq(subseq: str):
 
 """
 @author: Savvy Gupta
