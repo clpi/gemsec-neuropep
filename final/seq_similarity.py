@@ -72,11 +72,8 @@ class SequenceSimilarity:
         if not {*sub_seq}.issubset({*self.AA}):
             raise Exception('Invalid subsequence')
         if ind is None:
-            return self.peps_same_len[peps_same_len[self.aa_col].str.contains(sub_seq)]
-
-        data_filter = self.peps_same_len[self.aa_col].apply(
-            lambda s: s[ind:len(sub_seq) == sub_seq])
-        return self.peps_same_len.filter(data_filter)
+            return self.peps_same_len[self.peps_same_len[self.aa_col].str.contains(sub_seq)]
+        return self.peps_same_len[self.peps_same_len[self.aa_col].str.find(sub_seq) == ind]
 
     def get_sim_matrix(self, seq) -> pd.DataFrame:
         return self.data.filter

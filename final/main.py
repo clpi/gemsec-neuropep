@@ -15,7 +15,8 @@ def main() -> None:
     similarity = SequenceSimilarity(SEQS, DATA_PATHS, PEP_PATH, AA_COL)
 
     # --------------------------- debug
-
+    # Check to make sure df filter works
+    print(similarity.df_filter_subseq('SVP', ind=0))
     # ----------------------------
 
 if __name__ == '__main__':
