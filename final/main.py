@@ -1,4 +1,4 @@
-from seq_similarity import SequenceData, SequenceSimilarity
+from seq_similarity import SequenceSimilarity
 
 def main() -> None:
     DATA_PATHS = {
@@ -10,9 +10,13 @@ def main() -> None:
         'GRBP5':'IMVTESSDYSSY',
         'M6':'IMVTASSAYDDY'
     }
-    AA_COL = 'AA_seq'
-    PEP_PATH = 'src_data/Organized_NPS.csv'
-    seq_data = SequenceData(SEQS, )
+    AA_COL = 'Sequences'
+    PEP_PATH = 'src_data/Sequence_data.csv'
+    similarity = SequenceSimilarity(SEQS, DATA_PATHS, PEP_PATH, AA_COL)
+
+    # --------------------------- debug
+
+    # ----------------------------
 
 if __name__ == '__main__':
     main()

@@ -1,17 +1,14 @@
+# @TODO Dynamically filter peptide set based on length(s) of input sequences of binders
+#       i.e. 2 binders, one 11 AA long, one 13 AA long, each gets their own "subset" of the
+#       full peptide lilst that can be compared to it. For any number of input sequences
+
 import pandas as pd
 import numpy as np
 from scipy.stats import kendalltau
 import matplotlib.pyplot as plt
-from typing import Set, Tuple
-from data_src import SimilarityDat
+from typing import Set, Tuple, Dict
 
-class SequenceData:
-    binders: Dict
-    data_paths: Dict
-    pep_path: str
-    aa_col: str
-
-class SequenceSimilarity(object):
+class SequenceSimilarity:
     '''
     Class that takes in a path to a list of amino acid sequences as well
     as any number of peptide sequences explicitly that are known to have
@@ -19,26 +16,31 @@ class SequenceSimilarity(object):
     peptide in path and returns domains AA sequence with high similarity
     '''
 
-    def __init__(self, seq_data: SequenceData):
+    def __init__(self, binders: Dict, data_paths: Dict, peps_path: str, aa_col: str):
         
-        self.__update_binders(self, seq_data.binders)
-        self.__update_data_paths(self, seq_data.data_paths)
+        self.binder_dict = binders
+        self.data_paths_dict = data_paths
+        self.__update_binders()
+        self.__update_similarity_data()
 
-        self.peps = pd.read_csv(seq_data.pep_path)
-        self.aa_col = seq_data.aa_col
+        self.peps = pd.read_csv(peps_path)
+        self.peps.columns = [aa_col]
+        self.same_len_peps = self.peps[self.peps[aa_col].str.len() == self.binder_len]
+        self.aa_col = aa_col
 
-        self.AA = Set('LINGVEPHKAYWQMSCTFRD')
+        self.AA = set('LINGVEPHKAYWQMSCTFRD')
         self.sseq_set: Set[Tuple[int, str]] # full set of binder subseqs
         self.top_sseq: Set[Tuple[int, str]] # set of sub sequences w/ high simil
         self.top_seq: Set[str]              # set of peptides with high simil
     
-    def __update_binders(self, binders: Dict) -> None:
+    def __update_binders(self) -> None:
         '''
         Private method to set the binders stored by
         class and check to make sure they are of the
         same length as one another
         '''
-        self.binders = [binder for binder in binders.values()]
+        print(self.binder_dict)
+        self.binders = [binder for binder in self.binder_dict.values()]
         try:
             self.binder_len = len(self.binders[0])
         except:
@@ -51,15 +53,14 @@ class SequenceSimilarity(object):
                 #       lengthed binder is compared with different parts of the
                 #       full peptide set of the same length
 
-
     def __update_similarity_data(self) -> None:
         """
         Private method to store the paths of any data needed
         for similarity calcs and create Dataframes from them
         """
-        self.data_paths: Dict = seq_data.data_paths
-        self.data = {data:pd.read_csv(path, header=None) \
-                     for data:path in self.data_paths}
+        self.data_paths: Dict = self.data_paths_dict
+        self.data = {data:pd.read_csv(self.data_paths[data], header=None) \
+                     for data in self.data_paths.keys()}
 
 
     def df_filter_subseq(self, data: pd.DataFrame, sub_seq: str, ind: int = None):
@@ -118,4 +119,4 @@ class SequenceSimilarity(object):
     '''
 
     def get_kendalltau_corr_map(self) -> Tuple:
-        return kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']]
+        return kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']])
