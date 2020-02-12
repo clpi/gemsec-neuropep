@@ -1,7 +1,3 @@
-# @TODO Dynamically filter peptide set based on length(s) of input sequences of binders
-#       i.e. 2 binders, one 11 AA long, one 13 AA long, each gets their own "subset" of the
-#       full peptide lilst that can be compared to it. For any number of input sequences
-
 import pandas as pd
 import numpy as np
 from scipy.stats import kendalltau
@@ -117,8 +113,8 @@ class SequenceSimilarity:
         if not {*sub_seq}.issubset({*self.AA}):
             raise Exception('Invalid subsequence')
         if ind is None:
-            return self.peps_same_len[self.peps_same_len[self.aa_col].str.contains(sub_seq)]
-        return self.peps_same_len[self.peps_same_len[self.aa_col].str.find(sub_seq) == ind]
+            return self.peps_sl_sim[self.peps_sl_sim[self.aa_col].str.contains(sub_seq)]
+        return self.peps_sl_sim[self.peps_sl_sim[self.aa_col].str.find(sub_seq) == ind]
 
     def get_sim_matrix(self, seq) -> pd.DataFrame:
         return self.data.filter
