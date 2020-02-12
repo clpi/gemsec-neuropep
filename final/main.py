@@ -16,7 +16,7 @@ def main() -> None:
 
     # --------------------------- debug
     # Check to make sure df filter works
-    print(similarity.df_filter_subseq('SVP', ind=0))
+    print(similarity.df_filter_subseq('SVP', ind=0)) # it works!
     # ----------------------------
 
 if __name__ == '__main__':
