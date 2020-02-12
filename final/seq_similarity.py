@@ -25,7 +25,7 @@ class SequenceSimilarity:
 
         self.peps = pd.read_csv(peps_path)
         self.peps.columns = [aa_col]
-        self.same_len_peps = self.peps[self.peps[aa_col].str.len() == self.binder_len]
+        self.peps_same_len = self.peps[self.peps[aa_col].str.len() == self.binder_len]
         self.aa_col = aa_col
 
         self.AA = set('LINGVEPHKAYWQMSCTFRD')
@@ -63,7 +63,7 @@ class SequenceSimilarity:
                      for data in self.data_paths.keys()}
 
 
-    def df_filter_subseq(self, data: pd.DataFrame, sub_seq: str, ind: int = None):
+    def df_filter_subseq(self, sub_seq: str, ind: int = None):
         '''
         Takes in a subsequence of equal or lesser length to
         peptides in class peptide dataframe and returns a dataframe
@@ -72,11 +72,11 @@ class SequenceSimilarity:
         if not {*sub_seq}.issubset({*self.AA}):
             raise Exception('Invalid subsequence')
         if ind is None:
-            return self.data.filter() #@TODO Implement the filter here
+            return self.peps_same_len[peps_same_len[self.aa_col].str.contains(sub_seq)]
 
-        data_filter = self.data[self.AA_COL].apply(
+        data_filter = self.peps_same_len[self.aa_col].apply(
             lambda s: s[ind:len(sub_seq) == sub_seq])
-        return data[data[self.AA_COL].filter(data_filter)]
+        return self.peps_same_len.filter(data_filter)
 
     def get_sim_matrix(self, seq) -> pd.DataFrame:
         return self.data.filter
