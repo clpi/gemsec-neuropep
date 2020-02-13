@@ -12,11 +12,14 @@ def main() -> None:
     }
     AA_COL = 'Sequences'
     PEP_PATH = 'src_data/Sequence_data.csv' 
-    similarity = SequenceSimilarity(SEQS, DATA_PATHS, PEP_PATH, AA_COL)
+    grbp5_sim = SequenceSimilarity(SEQS['GRBP5'], DATA_PATHS, PEP_PATH, AA_COL)
+    m6_sim = SequenceSimilarity(SEQS['M6'], DATA_PATHS, PEP_PATH, AA_COL)
+    grbp5_sim.update_similarities()
+    m6_sim.update_similarities()
 
     # --------------------------- debug
     # Check to make sure df filter works
-    print(similarity.df_filter_subseq('SVP', ind=0)) # it works!
+    print(grbp5_sim.df_filter_subseq('SVP', ind=0)) # it works!
     # ----------------------------
 
 if __name__ == '__main__':
