@@ -205,6 +205,9 @@ class SequenceSimilarity:
         sseq = self.get_binder_subseq()
         filtered_data = [self.df_filter_subseq(ss,i) for (ss,i) in sseq if len(ss) >= min_length]
         return pd.concat(filtered_data)
+
+    def get_bio_functions_by_loc(self):
+        pass
     
     #------------------helper methods ------------------------------------#
                 
@@ -213,3 +216,9 @@ class SequenceSimilarity:
 
     def get_kendalltau_corr_map(self) -> Tuple:
         return kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']])
+
+    #==========================notes===========================================#
+    #TODO implement method to charcterize different locations on each peptide according to their
+    #funtion from the number map. I.e. a (head -- that is, first 3 amino acids) of num seq
+    # 112 can be considered "Primarily 1 (whatever that is)". The tail can be characteriszed in the
+    # same way
