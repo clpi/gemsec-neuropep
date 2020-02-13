@@ -27,6 +27,7 @@ from scipy.stats import kendalltau
 import matplotlib.pyplot as plt
 from typing import Set, Tuple, Dict, List
 from scipy import interpolate
+from scipy import stats
 
 class SequenceSimilarity:
     '''
@@ -41,6 +42,7 @@ class SequenceSimilarity:
                  peps_path: str,       #      to reduce reliance on outside data
                  aa_col: str):         #-> The column in peps_path csv where sequences are held
         
+        # ---- setting data ---------
         self.AA = list('FYWAVILMSTNQPGDEKHRC')
         self.conv = ["NUM", "EIIP", "FNS"]
         self.con_vals = dict.fromkeys(self.conv)
@@ -57,12 +59,16 @@ class SequenceSimilarity:
             self.AA_map[conv] = dict(zip(self.AA, self.con_vals[conv]))
         self.binder = binder   # to get binder_len, just use len(self.binders)
         self.__read_similarity_data(data_paths) # !TO BE DEPRECATED! Just store data in class
-
+        
+        # ---- helper lambda functions
+        self.AA_conv = lambda typ, pep: [self.AA_map[typ][AA] if AA in self.AA else 0 for AA in pep]
+        self.get_sim = lambda p1, p2, t: sum([self.data[t][a1][a2] for a1 in p1 for a2 in p2])
+        
+        # ---- setting up dataframes
         self.aa_col = aa_col
         self.columns = ['EIIP_Seq', 'NUM_Seq', 'PAM30', 'BLOSUM', 'RRM_SN', 'RRM_Corr', 'FNS_Seq']
         ## @TODO: Add "# of matching sseqs, cross entropy AA, cross entropy Num columns ?"
-        self.AA_conv = lambda typ, pep: [self.AA_map[typ][AA] if AA in self.AA else 0 for AA in pep]
-        self.get_sim = lambda p1, p2, t: sum([self.data[t][a1][a2] for a1 in p1 for a2 in p2])
+        
         self.peps = pd.read_csv(peps_path)
         self.peps = self.peps[~self.peps[self.aa_col].str.contains("O")]
         self.peps.columns = [aa_col]
@@ -84,10 +90,9 @@ class SequenceSimilarity:
         for data in self.data.keys():
             self.data[data] = pd.read_csv(data_path_dict[data], index_col=0)
             self.data[data] = self.data[data].to_dict()
-
             
     def _update_AA_conversion(self, conv_type: str = None) -> None:
-        """
+        """if seq.signaltonoise(cross) < max(sn):
         Adds to the initially empty column values for conv_type (possible choices
         'EIIP' and 'Num' for now) the conversion of the AA sequence in the self.aa_col
         column a list representing its conversion
@@ -95,6 +100,7 @@ class SequenceSimilarity:
         seqs = self.pep_data[self.aa_col]
         self.pep_data[conv_type+"_Seq"] = [self.AA_conv(conv_type, p) for p in seqs]
 
+    
     def _update_matrix_similarity(self) -> None:
         """
         Just updates the similarity columns for the output similarity dataframe.
@@ -103,13 +109,46 @@ class SequenceSimilarity:
         for data in self.data.keys():
             sim = [self.get_sim(p, self.binder, data) for p in self.pep_data[self.aa_col]]
             self.pep_data[data] = np.interp(sim, (min(sim), max(sim)), (0,100))
+        
 
     def _update_RRM_similarity(self) -> None:
-        get_dft_from_eiip = lambda eiip: np.fft.rfft(eiip)[1:]
+        """
+        Uses the Resonant Recognition Model as described by Irena Cosic to 
+        """
+        get_dft_from_eiip = lambda ls: np.fft.rfft(ls)
         get_cross_spectrum = lambda p1, p2: [x1*x2 for x1, x2 in zip(p1, p2)]
-        pass
-        #@TODO Finish
+        bnd_eiip = self.AA_conv('EIIP', self.binder)
+        bnd_dft = get_dft_from_eiip(bnd_eiip)
+        sn = []
+        do = []
+        best_sn = None
+        best_dot = None
         
+        def signaltonoise(a, axis=0, ddof=0):
+            a = np.asanyarray(a)
+            m = a.mean(axis)
+            sd = a.std(axis=axis, ddof=ddof)
+            return np.where(sd == 0, 0, m/sd)
+        
+        for pep in self.pep_data[self.aa_col]:
+            seq_eiip =self.AA_conv('EIIP', pep)
+            seq_dft = get_dft_from_eiip(seq_eiip)
+            cross = get_cross_spectrum(seq_dft, bnd_dft)
+            dot = np.dot(seq_dft, bnd_dft)
+            SN = np.mean(np.real(signaltonoise(cross, axis=None)))
+            do.append(dot)
+            sn.append(SN)
+            if not sn and SN >= max(sn):
+                best_sn = (pep, seq_dft)
+            if not do or dot >= max(do):
+                best_dot = (pep, seq_dft)
+            
+        sn_out = np.interp(sn, (min(sn), max(sn)), (0,100))
+        dot_out = np.interp(do, (min(do), max(do)), (0,100))
+        self.pep_data['RRM_Corr'] = dot_out
+        self.pep_data['RRM_SN'] = sn_out
+        pass
+    
     # NOTE! Adds columns "Matching_sseqs" and "Num_matching" to output
     # Might be too unwieldy / unhelpful for output similarity data
     # if so, just comment out _update_matching_sseqs()
@@ -159,6 +198,7 @@ class SequenceSimilarity:
         """
         if self.pep_data.columns.contains(['sseq_matches', 'num_matches']):
             self.pep_data = self.pep_data.drop(columns=['sseq_matches', 'num_matches'])
+                
     
     def update_similarities(self) -> None:
         '''
@@ -205,20 +245,38 @@ class SequenceSimilarity:
         sseq = self.get_binder_subseq()
         filtered_data = [self.df_filter_subseq(ss,i) for (ss,i) in sseq if len(ss) >= min_length]
         return pd.concat(filtered_data)
-
-    def get_bio_functions_by_loc(self):
-        pass
+        
+        #@TODO Finish
     
     #------------------helper methods ------------------------------------#
+    
+    def aa_dict(self, conversion) -> Dict:
+        if conversion == 'NUM':
+            return dict(zip(self.AA, self.NUM))
+        elif conversion == 'EIIP':
+            return dict(zip(self.AA, self.EIIP))
+        elif conversion == 'FNS':
+            return dict(zip(self.AA, self.FNS))
+        else:
+            raise Exception("Must specify AA conversion target")
                 
                 
     #-------------------miscellaneous methods------------------------------#
 
     def get_kendalltau_corr_map(self) -> Tuple:
         return kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']])
+    
+'''
+import pandas as pd
+from scipy.spatial.distance import euclidean, pdist, squareform
 
-    #==========================notes===========================================#
-    #TODO implement method to charcterize different locations on each peptide according to their
-    #funtion from the number map. I.e. a (head -- that is, first 3 amino acids) of num seq
-    # 112 can be considered "Primarily 1 (whatever that is)". The tail can be characteriszed in the
-    # same way
+
+def similarity_func(u, v):
+    return 1/(1+euclidean(u,v))
+
+DF_var = pd.DataFrame.from_dict({"s1":[1.2,3.4,10.2],"s2":[1.4,3.1,10.7],"s3":[2.1,3.7,11.3],"s4":[1.5,3.2,10.9]})
+DF_var.index = ["g1","g2","g3"]
+
+dists = pdist(DF_var, similarity_func)
+DF_euclid = pd.DataFrame(squareform(dists), columns=DF_var.index, index=DF_var.index)
+'''

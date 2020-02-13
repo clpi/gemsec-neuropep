@@ -17,6 +17,7 @@ def main() -> None:
     grbp5_sim.update_similarities()
     m6_sim.update_similarities()
     grbp5_sim.pep_data.to_csv('./out/almost_final_grbp5.csv')
+    print(grbp5_sim.pep_data.corr())
 
     # --------------------------- debug
     # Check to make sure df filter works
