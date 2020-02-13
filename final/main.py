@@ -11,7 +11,7 @@ def main() -> None:
         'M6':'IMVTASSAYDDY'
     }
     AA_COL = 'Sequences'
-    PEP_PATH = 'src_data/Sequence_data.csv'
+    PEP_PATH = 'src_data/Sequence_data.csv' 
     similarity = SequenceSimilarity(SEQS, DATA_PATHS, PEP_PATH, AA_COL)
 
     # --------------------------- debug
