@@ -106,7 +106,7 @@ class SequenceSimilarity:
 
     def _update_RRM_similarity(self) -> None:
         get_dft_from_eiip = lambda eiip: np.fft.rfft(eiip)[1:]
-        get_cross_spectrum = lambda p1, p2: [x1*x2 for x1, x2 in zip(p1, p2)
+        get_cross_spectrum = lambda p1, p2: [x1*x2 for x1, x2 in zip(p1, p2)]
         pass
         #@TODO Finish
         
