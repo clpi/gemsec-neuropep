@@ -16,10 +16,12 @@ def main() -> None:
     m6_sim = SequenceSimilarity(SEQS['M6'], DATA_PATHS, PEP_PATH, AA_COL)
     grbp5_sim.update_similarities()
     m6_sim.update_similarities()
+    grbp5_sim.pep_data.to_csv('./out/almost_final_grbp5.csv')
 
     # --------------------------- debug
     # Check to make sure df filter works
     print(grbp5_sim.df_filter_subseq('SVP', ind=0)) # it works!
+    print(grbp5_sim[['PAM30', 'BLOSUM']])
     # ----------------------------
 
 if __name__ == '__main__':
