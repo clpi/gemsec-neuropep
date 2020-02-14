@@ -31,8 +31,7 @@ class SequenceSimilarity:
                  binder_name: str,
                  data_paths: Dict,     #@TODO Make another .py file containing object version of necessary sim matrices/conversions, etc.
                  peps_path: str,       #      to reduce reliance on outside data
-                 aa_col: str,
-                 dists: bool):         #-> The column in peps_path csv where sequences are held
+                 aa_col: str):         #-> The column in peps_path csv where sequences are held
         
         # ---- setting data ---------
         self.AA = list('FYWAVILMSTNQPGDEKHRC')
@@ -77,7 +76,7 @@ class SequenceSimilarity:
         self.pep_data = self.peps_same_len.copy()
         for col in self.columns:
             self.pep_data[col] = None
-        self.update_similarities(use_distance=True)
+        self.update_similarities(distance=True)
         self.pep_match = self.get_df_with_binder_subseqs()
         
     #----------------SET UP FUNCTIONS (void)-------------------------------#
@@ -203,27 +202,22 @@ class SequenceSimilarity:
                 self.columns.remove(col)
             self.sim_cols.remove('weighted_matches')
             
-    def _update_distances(self, metrics: List = []) -> None:
+    def _update_distances(self, *metrics = []) -> None:
         """
         Adds Hamming, Levenstein, etc. distance metrics for sequences in peptide list
         Metrics can be specified by name string in parameter
         """
         distances = {
-            'jaro_winkler': (lambda p1, p2: td.jaro_winkler.normalized_similarity(p1, p2)),
-            'needleman_wunsch': (lambda p1, p2: td.needleman_wunsch.normalized_similarity(p1, p2)),
-            'smith_waterman': (lambda p1, p2: td.smith_waterman.normalized_similarity(p1, p2)),
-            'levenshtein': (lambda p1, p2: td.levenshtein.normalized_similarity(p1, p2)),
+            'hamming': Lambda((p1, p2), td.hamming.normalized_similarity(p1, p2)),
+            'jaro_winkler': Lambda((p1, p2), td.jaro_winkler.normalized_similarity(p1, p2)),
+            'needleman-wunsch': Lambda((p1, p2), td.needleman_wunsch.normalized_similarity(p1, p2)),
+            'smith_waterman': Lambda((p1, p2), td.smith_waterman.normalized_similarity(p1, p2)),
+            'levenstein': Lambda((p1, p2), td.levenstein.normalized_similarity(p1, p2)),
+            'gotoh': Lambda((p1, p2), td.gotoh.normalized_similarity(p1, p2)),
         }
-        dists = list(distances.keys()) if len(metrics)==0 else metrics
-        data = pd.DataFrame(index=self.pep_data.index, columns=dists)
-        for dist in dists:
-            self.pep_data[dist] = [distances[dist](pep, self.binder) for pep in self.pep_data[self.aa_col]]
-        self.columns += dists
-        self.sim_cols += dists
-                
                 
     
-    def update_similarities(self, use_distance=False, metrics: List = []) -> None:
+    def update_similarities(self, use_distance=False, *metrics = []) -> None:
         '''
         Updates the similarity values whenever called (for now should be only once right
         after creating the object, ecept possibly if the Binding peptide is updated
@@ -234,7 +228,7 @@ class SequenceSimilarity:
         self._update_RRM_similarity()
         self._update_matching_sseqs()
         if use_distance:
-            if len(metrics) == 0:
+            if not metrics:
                 self._update_distances()
             else:
                 self._update_distances(metrics)
@@ -289,13 +283,14 @@ class SequenceSimilarity:
         non_seq_cols = self.sim_cols.copy()
         seq_cols = [self.aa_col] + [*self.conv_cols]
         other_data = other.pep_data.copy()
-        if sep_cols:
+        if sep_cols 
             if len(list(this_data.columns)) == len(list(other_data.columns)):
                 return this_data.merge(right=other_data, on=self.aa_col, suffixes=("_"+self.bname, "_"+other.bname))
             else:
-                raise Exception("Mismatched columns")
+            raise Exception("Mismatched columns")
         new_cols = ['{}_{}_{}'.format(col, self.bname, other.bname) for col in self.sim_cols]
-        out_data = pd.DataFrame(index=this_data.index, columns=seq_cols + new_cols)
+        new_cols_full = seq_cols + new_cols
+        out_data = pd.DataFrame(index=this_data.index, columns=new_cols_full)
         out_data[seq_cols] = this_data[seq_cols]
         out_data[new_cols] = 0.5 * (this_data[non_seq_cols] + other_data[non_seq_cols])
         if 'sseq_matches' in self.columns or 'sseq_matches' in other.columns:
@@ -340,4 +335,3 @@ DF_euclid = pd.DataFrame(squareform(dists), columns=DF_var.index, index=DF_var.i
 #      dataframes within the same class --> for big similarity calculations. Or just create multiple SequenceSimilarity instances
 # @TODO: Implement method to apply relevant similarity scoring algorithms (distance metrics, ex) for
 #       non-same-length peptides. Could even be stored alongside same length peptides
-# @TODO Simplify some of the df filtering going on with Dataframe.where() or Dataframe.mask or Dataframe.query or isin
