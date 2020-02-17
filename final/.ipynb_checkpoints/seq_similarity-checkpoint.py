@@ -12,12 +12,12 @@ USAGE:
 '''
 import pandas as pd
 import numpy as np
-from scipy.stats import kendalltau
 import matplotlib.pyplot as plt
 from typing import Set, Tuple, Dict, List
-from scipy import interpolate
-from scipy import stats
+from scipy import interpolate, stats, fftpack, signal
+#import sci-kit learn
 import textdistance as td
+#import biopython as bio
 
 class SequenceSimilarity:
     '''
@@ -26,68 +26,53 @@ class SequenceSimilarity:
     a certain set of properties. Generates metrics for similarity for each
     peptide in path and returns domains AA sequence with high similarity
     '''
-
-    def __init__(self, binder: str,
-                 binder_name: str,
-                 data_paths: Dict,     
-                 peps_path: str,       
+    AA = list('FYWAVILMSTNQPGDEKHRC')
+    
+    def __init__(self, binder: Tuple[str, str],
+                 data: SeqData,
+                 p_path: str,       
                  aa_col: str,
-                 dists: bool = False,
-                 only_matching: bool = False):       
+                 min_length: int = 0,
+                 dists: List = [],
+                 only_match: bool = False):       
         
         # ---- setting data ---------
-        self.AA = list('FYWAVILMSTNQPGDEKHRC')
-        self.conv = ["NUM", "EIIP", "FNS"]
+        
+        #self.conv = ["NUM", "EIIP", "FNS"]
+        self.d = {d: vars(data)[d] for d in list(vars(data).keys())}
+        self.conv = list(sl['conv'].keys())
+        self.aa_col = [aa_col]
+        self.sim_cols = ['PAM30', 'BLOSUM', 'RRM_SN', 'RRM_Corr', 'weighted_matches']
+        self.match_cols = ['sseq_matches', ]
         self.conv_cols = [conv+'_Seq' for conv in self.conv]
-        self.con_vals = dict.fromkeys(self.conv)
-        self.con_vals['NUM'] = [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 4, 5, 5, 6, 6, 6, 7]
-        self.con_vals['EIIP'] = [0.0946, 0.0516, 0.0548, 0.0373, 0.0057, 0.0, 0.0, 0.0823,\
-                     0.0829, 0.0941, 0.0036, 0.0761, 0.0198, 0.005, 0.1263, 0.0058, \
-                     0.0371, 0.0242, 0.0959, 0.0829]
-        self.con_vals['FNS'] = ['Aromatic', 'Aromatic', 'Aromatic', 'Hydrophobic', 'Hydrophobic', \
-                    'Hydrophobic', 'Hydrophobic', 'Hydrophobic', 'Polar', 'Polar', 'Polar', \
-                    'Polar', 'Proline', 'Glycine', 'Charge (-)', 'Charge (-)', 'Charge (+)', \
-                    'Charge (+)', 'Charge (+)', 'Excluded']
-        self.AA_map = dict.fromkeys(self.conv)
-        for conv in self.conv:
-            self.AA_map[conv] = dict(zip(self.AA, self.con_vals[conv]))
-        self.binder = binder   # to get binder_len, just use len(self.binders)
-        self.bname = binder_name
-        self.__read_similarity_data(data_paths) # !TO BE DEPRECATED! Just store data in class
+        self.cols = self.aa_col + self.sim_cols + self.conv_cols + self.match_cols
+        self.AA_map = {cnv:dict(zip(self.AA, self.d['conv'][cnv])) for cnv in self.conv}
+        self.bname, self.b = binder
+        # finds all possible subsequences and locations in binder in tuple (sseq, ind)
+        self.bsseq = [(self.b[i:j], i) for i, _ in enumerate(self.b) for j in range(i+1, len(self.b)+1)]
         
         # ---- helper lambda functions
-        self.AA_conv = lambda typ, pep: tuple(self.AA_map[typ][AA] if AA in self.AA else 0 for AA in pep)
-        self.get_sim = lambda p1, p2, t: sum([self.data[t][a1][a2] for a1 in p1 for a2 in p2])
+        self.AA_conv = lambda typ, p: tuple(self.AA_map[typ][AA] if AA in self.AA else 0 for AA in p)
+        self.sim_sum = lambda p1, p2, t: sum([self.d['matr'][t][a1][a2] for a1 in p1 for a2 in p2])
         
-        self.aa_col = aa_col
-        self.sim_cols = ['PAM30', 'BLOSUM', 'RRM_SN', 'RRM_Corr']
-        self.columns = [*self.sim_cols] + [*self.conv_cols]
+        self.p_og = pd.read_csv(p_path)
+        self.__set_peps(aa_col, min_length, only_match)
+        self.__update_similarities(dists)
         
-        self.peps = pd.read_csv(peps_path)
-        self.peps.columns = [aa_col]
-        self.peps = self.peps.drop_duplicates()
-        self.peps = self.peps[~self.peps[self.aa_col].str.contains("O")]
-        self.peps_same_len = self.peps[self.peps[aa_col].str.len() == len(binder)]
-        if len(self.peps_same_len) == 0:
-            raise Exception("No peptides of same length as binder found")
-        self.pep_data = self.peps_same_len.copy()
-        for col in self.columns:
-            self.pep_data[col] = None
-        self.update_similarities(use_distance=True)
-        self.pep_match = self.get_df_with_binder_subseqs()
-        if only_matching: self.pep_data = self.pep_match
+        
         
     #----------------SET UP FUNCTIONS (void)-------------------------------#
+    
+    def __set_peps(self, aa_col:str, minlen: int = 0, matchonly: bool = False):
+        self.p_og = self.p_og.drop_duplicates()
+        self.p_og = self.p_og[~self.p_og[aa_col].str.contains("O")]
+        self.p = self.p_og[self.p_og[aa_col].str.len() == len(self.b)]
+        if not list(self.p):  raise Exception("No peptides of same length as binder found")
+        self.pdata = pd.DataFrame(index=self.p.index, columns=self.cols)
+        self.pdata_match = pd.concat([self.df_filter_subseq(ss,i) for (ss,i) in self.bsseq if len(ss) >= minlen])
+        self.p_match = self.pdata_match[aa_col]
+        if matchonly: self.p, self.pdata = self.pmatch, self.pdata_match
 
-    def __read_similarity_data(self, data_path_dict) -> None:
-        """
-        Private method to store the paths of any data needed
-        for similarity calcs and create Dataframes from them
-        """
-        self.data = dict.fromkeys(data_path_dict.keys())
-        for data in self.data.keys():
-            self.data[data] = pd.read_csv(data_path_dict[data], index_col=0)
-            self.data[data] = self.data[data].to_dict()
             
     def _update_AA_conversion(self) -> None:
         """if seq.signaltonoise(cross) < max(sn):
@@ -95,36 +80,28 @@ class SequenceSimilarity:
         'EIIP' and 'Num' for now) the conversion of the AA sequence in the self.aa_col
         column a list representing its conversion
         """
-        for conv in self.conv:
+        for conv in enumerate(self.conv):
             if conv == 'NUM':
-                out = []
-                for p in self.pep_data[self.aa_col]:
-                    num_list = self.AA_conv(conv, p)
-                    s = ''
-                    for n in num_list:
-                        s += str(n)
-                    out.append(s)
-                self.pep_data[conv+"_Seq"] = out
+                self.pdata[conv+"_Seq"] = [str([str(n) for n in self.AA_conv(conv, p)]) for p in self.p]
             else:
-                self.pep_data[conv+"_Seq"] = [self.AA_conv(conv, p) for p in self.pep_data[self.aa_col]]
+                self.pdata[conv+"_Seq"] = [self.AA_conv(conv, p) for p in self.p]
     
     def _update_matrix_similarity(self) -> None:
         """
         Just updates the similarity columns for the output similarity dataframe.
-        Uses lambda helper function self.get_sim in __init__
+        Uses lambda helper function self.sim_sum in __init__
         """
-        for data in self.data.keys():
-            sim = [self.get_sim(p, self.binder, data) for p in self.pep_data[self.aa_col]]
-            self.pep_data[data] = np.interp(sim, (min(sim), max(sim)), (0,1))
+        for m in list(self.d['matr'].keys()):
+            sim = [self.sim_sum(p, self.b, m) for p in self.p]
+            self.pdata[m] = np.interp(sim, (min(sim), max(sim)), (0,1))
         
 
     def _update_RRM_similarity(self) -> None:
         """
         Uses the Resonant Recognition Model as described by Irena Cosic to 
         """
-        get_dft_from_eiip = lambda ls: np.real(np.fft.rfft(ls))
-        get_cross_spectrum = lambda p1, p2: [x1*x2 for x1, x2 in zip(p1, p2)]
-        bnd_eiip = self.AA_conv('EIIP', self.binder)
+        
+        bnd_eiip = self.AA_conv('EIIP', self.b)
         bnd_dft = get_dft_from_eiip(bnd_eiip)
         sn = []
         do = []
@@ -137,10 +114,11 @@ class SequenceSimilarity:
             sd = a.std(axis=axis, ddof=ddof)
             return np.where(sd == 0, 0, m/sd)
         
-        for pep in self.pep_data[self.aa_col]:
+        for pep in self.p:
             seq_eiip =self.AA_conv('EIIP', pep)
-            seq_dft = get_dft_from_eiip(seq_eiip)
-            cross = get_cross_spectrum(seq_dft, bnd_dft)
+            seq_dft = np.fft.rfft(seq_eiip)
+            
+            cross = signal.correlation(seq_dft, bnd_dft)
             dot = np.dot(seq_dft, bnd_dft)
             SN = np.mean(np.real(signaltonoise(cross, axis=None)))
             do.append(dot)
@@ -152,8 +130,11 @@ class SequenceSimilarity:
             
         sn_out = np.interp(sn, (min(sn), max(sn)), (0,1))
         dot_out = np.interp(do, (min(do), max(do)), (0,1))
-        self.pep_data['RRM_Corr'] = dot_out
-        self.pep_data['RRM_SN'] = sn_out
+        self.pdata['RRM_Corr'] = dot_out
+        self.pdata['RRM_SN'] = sn_out
+        
+    def get_spectrums() -> pd.DataFrame:
+        pass
     
     # NOTE! Adds columns "Matching_sseqs" and "Num_matching" to output
     # Might be too unwieldy / unhelpful for output similarity data
@@ -167,32 +148,31 @@ class SequenceSimilarity:
         """
         # @TODO Remove "duplicates" which occur at different matching indexes of binder
         # but are part of a larger pattern already recorded at an earlier index
-        self.pep_data['sseq_matches'] = None
-        self.pep_data['weighted_matches'] = None
+        self.pdata['sseq_matches'] = None
+        self.pdata['weighted_matches'] = None
         
         score: float = lambda s: (single_match_weight * 1) + (len(s)**weight)
-        all_sseqs: List = self.get_binder_subseq()
         matches: List = list(); nmatches = list()
-        for i, seq in enumerate(self.pep_data[self.aa_col]):
-            matches.append([]); nmatches.append(0)
-            lmatch: Tuple = None
+        for i, seq in enumerate(self.p):
+            matches.append(list()); nmatches.append(int())
             for j, AA in enumerate(seq): 
-                for k, (sseq, bin_i) in enumerate(all_sseqs):
-                    if (bin_i == j) and (seq[j:len(sseq)+j] == sseq): 
+                lmatch: Tuple = None
+                for k, (sseq, bin_i) in enumerate(self.bsseq):
+                    in_seq = seq[j:len(sseq)+j]
+                    if (bin_i == j) and (in_seq == sseq): 
                         if lmatch is not None:
-                            if seq[lmatch[0]:lmatch[0]+lmatch[1]].find(seq[j:len(sseq)+j]) >= 0:
+                            if seq[lmatch[0]:lmatch[0]+lmatch[1]].find(in_seq) >= 0:
                                 continue
-                        if all_sseqs[k-1][1] == bin_i:
+                        if self.bsseq[k-1][1] == bin_i:
                             nmatches[i] -= score(matches[i].pop()[0])
                             lmatch = (bin_i, len(sseq))
-                        matches[i].append((sseq, bin_i))   
+                        matches[i].append((sseq, bin_i))
                         nmatches[i] += score(sseq)
-                        prev_match = (sseq, bin_i)
         
-        self.pep_data['sseq_matches'] = [*matches]
-        self.pep_data['weighted_matches'] = np.interp(nmatches, (min(nmatches), max(nmatches)), (0,1))
+        self.pdata['sseq_matches'] = matches
+        self.pdata['weighted_matches'] = np.interp(nmatches, (min(nmatches), max(nmatches)), (0,1))
         self.sim_cols += ['weighted_matches']
-        self.columns += ['sseq_matches', 'weighted_matches']
+        self.cols += ['sseq_matches', 'weighted_matches']
         
                     
     def _remove_matching_sseqs_column(self) -> None:
@@ -200,37 +180,23 @@ class SequenceSimilarity:
         Just removes the binder sseq pattern matches list column and number
         of matching (with/without) weighting if they exist
         """
-        for col in ['sseq_matches', 'weighted_matches']:
-            if self.pep_data.columns.contains(['sseq_matches', 'weighted_matches']):
-                self.pep_data = self.pep_data.drop(columns=['sseq_matches', 'weighted_matches'])
-                self.columns.remove(col)
-            self.sim_cols.remove('weighted_matches')
+        if self.pdata.columns.contains(self.match_cols):
+            self.cols.remove(self.match_cols)
+            self.pdata = self.pdata.drop(columns=self.match_cols)
             
     def _update_distances(self, metrics: List = []) -> None:
         """
         Adds Hamming, Levenstein, etc. distance metrics for sequences in peptide list
         Metrics can be specified by name string in parameter
         """
-        distances = {
-            'jaro_winkler': (lambda p1, p2: td.jaro_winkler.normalized_similarity(p1, p2)),
-            'needleman_wunsch': (lambda p1, p2: td.needleman_wunsch.normalized_similarity(p1, p2)),
-            'smith_waterman': (lambda p1, p2: td.smith_waterman.normalized_similarity(p1, p2)),
-            'levenshtein': (lambda p1, p2: td.levenshtein.normalized_similarity(p1, p2)),
-        }
-        dists = list(distances.keys()) if len(metrics)==0 else metrics
-        data = pd.DataFrame(index=self.pep_data.index, columns=dists)
-        for dist in dists:
-            self.pep_data[dist] = [distances[dist](pep, self.binder) for pep in self.pep_data[self.aa_col]]
-        self.columns += dists
+        dists = metrics if metrics else list(self.d['dist'].keys())
+        dist_vals = [[d['dist'][d](p, self.b) for p in self.p] for d in dists]
+        self.pdata[dists] = dist_vals
+        self.cols += dists
         self.sim_cols += dists
-        
-    def _unpack_num_encoding(self) -> None:
-        for i, num_tup in enumerate(list(self.pep_data['NUM_Seq'])):
-            for j, num in enumerate(num_tup):
-                self.pep_data['Nm_'+str(j)].iloc[i]
                 
                 
-    def update_similarities(self, use_distance=False, metrics: List = []) -> None:
+    def update_similarities(self, metrics: List = []) -> None:
         '''
         Updates the similarity values whenever called (for now should be only once right
         after creating the object, ecept possibly if the Binding peptide is updated
@@ -240,11 +206,8 @@ class SequenceSimilarity:
         self._update_matrix_similarity()
         self._update_RRM_similarity()
         self._update_matching_sseqs()
-        if use_distance:
-            if len(metrics) == 0:
-                self._update_distances()
-            else:
-                self._update_distances(metrics)
+        if metrics is not None: 
+            self._update_distances(metrics) if metrics else self._update_distances()
         # OPTIONAL
         # self._unpack_num_encoding()
         
@@ -259,51 +222,31 @@ class SequenceSimilarity:
         if not {*sub_seq}.issubset({*self.AA}):
             raise Exception('Invalid subsequence')
         if ind is None:
-            return self.pep_data[self.pep_data[self.aa_col].str.contains(sub_seq)]
-        return self.pep_data[self.pep_data[self.aa_col].str.find(sub_seq) == ind]
+            return self.pdata[self.p.str.contains(sub_seq)]
+        return self.pdata[self.p.str.find(sub_seq) == ind]
 
-    def get_sim_matrix(self, seq) -> pd.DataFrame:
+    def sim_sum_matrix(self, seq) -> pd.DataFrame:
         return self.data.filter
-
-    def get_binder_subseq(self) -> pd.DataFrame: #Each binder associated with list of (sseq, index)
-        '''
-        Generates all possible subsequences for binders. Returns ia list of tuples, where
-        each entry of the list is of the form ({Sub Seq}, {Ind}) of binder
-        '''
-        self.sseqs = [(self.binder[i:j], i) for i in range(len(self.binder)) for j in range(i+1, len(self.binder)+1)]
-        return self.sseqs
-
-
-    #@FIXME: Returns some rows with no pattern matches
-    def get_df_with_binder_subseqs(self, min_length: int = 0) -> Dict[str, pd.DataFrame]:
-        '''
-        Returns a filtered version of self.peps_same_len DataFrame containing only
-        those rows with sequences which contain subsequences (of min length specified in parameter) 
-        of the two binder sequences in the locations where they occur in the binders
-        '''
-        # @TODO Check that the output df is actually right
-        sseq = self.get_binder_subseq()
-        self.pep_match = pd.concat([self.df_filter_subseq(ss,i) for (ss,i) in sseq if len(ss) >= min_length])
-        return self.pep_match
         
     
     def merge_data(self, other, sep_cols = False) -> pd.DataFrame:
         # !!! IMPORTANT: "other" must also be SequenceSimilarity object (couldnt compile)
         """
-        Returns a merged Dataframe of self.pep_data and another SequenceSimilarity's pep_data.
+        Returns a merged Dataframe of self.pdata and another SequenceSimilarity's pep_data.
         If sep_cols=True, then the other SequenceSimilarity's columns will simply be appended
-        to the returned DataFrame (self.pep_data is unchanged). If False, results will be averaged.
+        to the returned DataFrame (self.pdata is unchanged). If False, results will be averaged.
         @NOTE: This is a super naive implementatoin -- expand this to make it more configurable
         @TODO: Take in *others as a list of arbitrarily many other SequenceSimilarities to compare
         """
         # must be same length binders -> so same peptides of interest
-        this_data = self.pep_data.copy()
+        this_data = self.pdata.copy()
         non_seq_cols = self.sim_cols.copy()
-        seq_cols = [self.aa_col] + [*self.conv_cols]
+        seq_cols = self.aa_col + self.conv_cols
         other_data = other.pep_data.copy()
         if sep_cols:
-            if len(list(this_data.columns)) == len(list(other_data.columns)):
-                return this_data.merge(right=other_data, on=self.aa_col, suffixes=("_"+self.bname, "_"+other.bname))        
+            if len(list(this_data.cols)) == len(list(other_data.cols)):
+                d = this_data.merge(right=other_data, on=self.aa_col, suffixes=("_"+self.bname, "_"+other.bname))
+                return d.drop_duplicates()
             else:
                 raise Exception("Mismatched columns")
 
@@ -312,20 +255,49 @@ class SequenceSimilarity:
         out_data[seq_cols] = this_data[seq_cols]
         both = pd.concat([this_data[non_seq_cols],other_data[non_seq_cols]])
         out_data[new_cols] = both.groupby(both.index).mean()
-        if 'sseq_matches' in self.columns or 'sseq_matches' in other.columns:
-            both_match = self.pep_data['sseq_matches'].append(other.pep_data['sseq_matches'])
+        if 'sseq_matches' in self.cols or 'sseq_matches' in other.cols:
+            both_match = self.pdata['sseq_matches'].append(other.pdata['sseq_matches'])
             both['sseq_matches'] = both_match
             out_data.join(both_match)
-        self.both = both
         return out_data
                     
         #@TODO Finish
                 
                 
     #-------------------miscellaneous methods------------------------------#
+    
+#     def get_kendalltau_corr_map(self) -> Tuple:
+#         return stats.kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']])
+    
+class SeqData:
 
-    def get_kendalltau_corr_map(self) -> Tuple:
-        return kendalltau(self.data['AA_MAP'][['Num']], self.data['AA_MAP'][['EIIP']])
+    CONV = {
+        'NUM': [0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 4, 5, 5, 6, 6, 6, 7],
+        'EIIP' : [0.0946, 0.0516, 0.0548, 0.0373, 0.0057, 0.0, 0.0, 0.0823,\
+                 0.0829, 0.0941, 0.0036, 0.0761, 0.0198, 0.005, 0.1263, 0.0058, \
+                 0.0371, 0.0242, 0.0959, 0.0829],
+        'FNS' : ['Aromatic', 'Aromatic', 'Aromatic', 'Hydrophobic', 'Hydrophobic', \
+                'Hydrophobic', 'Hydrophobic', 'Hydrophobic', 'Polar', 'Polar', 'Polar', \
+                'Polar', 'Proline', 'Glycine', 'Charge (-)', 'Charge (-)', 'Charge (+)', \
+                'Charge (+)', 'Charge (+)', 'Excluded'],
+    }
+    # @TODO: Import Biopython dicts of matrices, not read from .csvs
+    MATR = {
+        'PAM30': pd.read_csv('./src_data/pam30.csv', index_col=0).to_dict(),
+        'BLOSUM45': pd.read_csv('./src_data/BLOSUM.csv', index_col=0).to_dict(),
+    }
+    DIST = {
+        'jaro_winkler': (lambda p1, p2: td.jaro_winkler.normalized_similarity(p1, p2)),
+        'needleman_wunsch': (lambda p1, p2: td.needleman_wunsch.normalized_similarity(p1, p2)),
+        'smith_waterman': (lambda p1, p2: td.smith_waterman.normalized_similarity(p1, p2)),
+        'levenshtein': (lambda p1, p2: td.levenshtein.normalized_similarity(p1, p2))
+    }
+    
+    def __init__(self, conv=CONV.keys(), matr=MATR.keys(), dist=DIST.keys()):
+        
+        self.conv = {cnv:self.CONV[cnv] for cnv in self.CONV.keys() if cnv in conv}
+        self.matr = {mtr:self.MATR[mtr] for mtr in self.MATR.keys() if mtr in matr}
+        self.dist = {dst:self.DIST[dst] for dst in self.DIST.keys() if dst in dist}
     
 '''
 import pandas as pd
