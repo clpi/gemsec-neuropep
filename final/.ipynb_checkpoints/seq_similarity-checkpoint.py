@@ -14,7 +14,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from typing import Set, Tuple, Dict, List
-from scipy import stats, signal, fft
+from scipy import stats, signal
+from scipy.fftpack import fft, fftshift
 #import sci-kit learn
 import textdistance as td
 from Bio import pairwise2
@@ -53,20 +54,17 @@ class SequenceSimilarity:
         self.bname, self.b = binder
         self.bsseq = [(self.b[i:j], i) for i in range(len(self.b)) for j in range(i+1, len(self.b)+1)]
     
-        # ---- helper lambda functions
-        
         self.p_og = pd.read_csv(p_path)
         self.p_og.columns = [aa_col]
-        self.p_og[aa_col].drop_duplicates()
+        self.p_og = self.p_og.drop_duplicates(subset=[self.seq])
         self.p_og = self.p_og[~self.p_og[aa_col].str.contains("O")]
-        self.p_sl = self.p_og[self.p_og[aa_col].str.len() == len(self.b)]
-        self.p_ls = self.p_sl[aa_col].tolist()
+        self.p_ls = self.p_og[self.p_og[aa_col].str.len() == len(self.b)]
+        self.p_ls = self.p_ls[aa_col].tolist()
         self.p_og = self.p_og[aa_col].tolist()
         if len(self.p_ls) == 0:  
             raise Exception("No peptides of same length as binder found")
         self.p = pd.DataFrame(columns=self.cols)
         self.p[self.seq] = self.p_ls
-        # @TODO P STILL HAS DUPLICATES ????
         self.update_similarities(dists)
         
         self.p_match = self.filter_by_bsseq(min_length)
@@ -82,36 +80,38 @@ class SequenceSimilarity:
         """
         rrm = pd.DataFrame(index=self.p.index)
         eiip_seq = self.p['EIIP_Seq'].tolist()
+        
+        get_dft_ = lambda e: np.fft.rfft(e)
+        get_dft = lambda e: np.abs(2* np.fft.rfft(e)/len(e))
+        get_freq = lambda e: np.fft.rfftfreq(len(e))[0:int(len(e)/2)+1]
+        
+        self.b_eiip = self.conv_pep('EIIP', self.b)
+        self.b_eiip_dft = get_dft_(self.b_eiip)
+        self.b_dft_conj = np.conj(self.b_eiip_dft)
+        self.b_freq = get_freq(self.b_eiip_dft)
+        self.b_peak = signal.find_peaks(self.b_eiip_dft)
+        
         rrm = rrm.assign(
             seq = self.p_ls,
             eiip = eiip_seq,
-            dft = [np.fft.rfft(eiip)/len(eiip) for eiip in eiip_seq],
-            dft2 = [2*np.abs(np.fft.rfft(eiip)/len(eiip)) for eiip in eiip_seq],
-            freq = [np.abs(np.fft.fftfreq(len(eiip))[0:int(len(eiip)/2+1)]) for eiip in eiip_seq],
-            power = [np.abs(np.fft.rfft(eiip)/len(eiip))**2 for eiip in eiip_seq],
+            dft = [get_dft_(eiip) for eiip in eiip_seq],
+            freq = [get_freq(eiip) for eiip in eiip_seq],
         )
-        bind_eiip = self.conv_pep('EIIP', self.b)
-        self.bind_eiip_dft = 2*np.abs(np.fft.rfft(bind_eiip)/len(bind_eiip))
-        self.bind_freq = np.abs(np.fft.fftfreq(len(bind_eiip))[0:int(len(bind_eiip)/2+1)])
-        self.bind_peak = signal.find_peaks(self.bind_eiip_dft)
-        peaks = [signal.find_peaks(d) for d in rrm.dft2]
-        rrm['peak_loc'] = [p[0] for p in peaks]
-        rrm['peak_val'] = [p[1] for p in peaks]
-        rrm['peak_dist'] = [np.abs(p[0]-self.bind_peak[0]) for p in peaks]
-        rrm['correlate'] = [signal.correlate(d, self.bind_eiip_dft) for d in rrm.dft2]
-        rrm['convolve'] = [signal.convolve(d, self.bind_eiip_dft) for d in rrm.dft2]
+        rrm['cross'] = [d * self.b_dft_conj for d in rrm.dft]
+        rrm['peaks'] = [signal.find_peaks(c)[0] for c in rrm.cross]
+        rrm['SNR'] = [c.mean()/c.std() for c in rrm.cross]
+        rrm['corrcoef'] = [np.corrcoef(d, self.b_eiip_dft)[1][0] for d in rrm.dft]
+        rrm['correlate'] = [signal.correlate(d, self.b_eiip_dft) for d in rrm.dft]
+        rrm['convolve'] = [signal.convolve(d, self.b_eiip_dft) for d in rrm.dft]
+        self.p['RRM_SN'] = rrm['SNR']
+        self.p['RRM_Corr'] = rrm['corrcoef']
         self.rrm = rrm
-        
-        def get_max_seqs(num = 10, typ='correlate'):
-            maxes = [signal.find_peaks(rrm.iloc[n].correlate) for n in range(len(rrm))]
-            maxheight = [rrm[typ].iloc[i][m[0][0]] for i, m in enumerate(maxes)]
-            top_idx = np.argsort(maxheight)[-num:]
-            top_values = [maxheight[i] for i in top_idx]
-            top_seq = [top_seq.append(rex['seq'].iloc[i]) for i in top_idx]
-            top_data = self.p[self.p[self.seq].isin(top_seq)]
-            return top_data
             
-        def plot(col = 'column'): plt.plot(rrm.[col])
+        def plot(seq_i = 0, col = 'dft'): 
+            plt.plot(rrm[col].iloc[seq_i])
+
+        def merge():
+            return rrm.merge(self.p, left_on=rrm.index, right_on=self.p.index)
     
     
     # NOTE! Adds columns "Matching_sseqs" and "Num_matching" to output
@@ -124,29 +124,28 @@ class SequenceSimilarity:
         weighting=1, all matches are treated equally ('Y' at position 3 is treated equal
         to IMV at position 0) but lowering weighting lowers smaller-length matches
         """
-        # @TODO Remove "duplicates" which occur at different matching indexes of binder
-        # but are part of a larger pattern already recorded at an earlier index
-        self.p.sseq_matches, self.p.weighted_matches = None, None
-        self.bsseq.sort(key = lambda ss: len(ss[0]), reverse=True)
-        score: float = lambda s: (w1 * 1) + (len(s)**w2)
-        matches: List = list(); nmatches = list()
-        for i, seq in enumerate(self.p_ls):
-            matches.append(list()); nmatches.append(int())
-            trigger = False
-            for j in range(len(seq)):
-                if trigger: break
-                trigger = False
-                for (sseq, bin_i) in self.bsseq:
-                    in_seq = seq[j:len(sseq)+j]
-                    if (bin_i == j) and (in_seq == sseq):
-                        if len(matches[i]) > 0 and matches[i][-1][0].find(sseq)>=0:
-                            trigger = True
-                            break
-                        matches[i].append((sseq, bin_i))
-                        nmatches[i] += score(sseq)
-                        break
-#         matches = [pairwise2.align.localxx(s, self.b) for s in self.p_ls]
-        self.p.sseq_matches, self.p.weighted_matches = matches, nmatches
+        self.p['sseq_matches'] = None
+        self.p['weighted_matches'] = None
+        
+        score = lambda s: (w1 * 1) + (len(s)**w2)
+        all_sseqs = self.bsseq
+        matches = list(); num_matches = list()
+        for i, seq in enumerate(self.p[self.seq]):
+            matches.append([]); num_matches.append(0)
+            lmatch = None
+            for j, AA in enumerate(seq):
+                for k, (sseq, bin_i) in enumerate(all_sseqs):
+                    if (bin_i == j) and (seq[j:len(sseq)+j] == sseq):
+                        if lmatch is not None:
+                            if seq[lmatch[1]:lmatch[1]+lmatch[2]].find(seq[j:len(sseq)+j]) >= 0:
+                                continue
+                        if all_sseqs[k-1][1] == bin_i:
+                            num_matches[i] -= score(matches[i].pop()[0])
+                            lmatch = (sseq, bin_i, len(sseq))
+                        matches[i].append((sseq, bin_i))   
+                        num_matches[i] += score(sseq)
+
+        self.p.sseq_matches, self.p.weighted_matches = matches, num_matches
                 
     def update_similarities(self, metrics: List = []) -> None:
         '''
@@ -194,7 +193,6 @@ class SequenceSimilarity:
         this_data = self.p.copy()
         other_data = other.p.copy()
         sim_cols = self.sim_cols.copy()
-        print(sim_cols)
         if sep_cols:
             suf = ("_"+self.bname, "_"+other.bname)
             out = this_data.merge(right=other_data, on=self.seq, suffixes=(suf))
@@ -211,6 +209,17 @@ class SequenceSimilarity:
             both['sseq_matches'] = both_match
             out_data.join(both_match)
         return out_data
+    
+    def rrm_get_maxheight_seqs(num = 10, typ='correlate', ret='seq'):
+        maxes = [signal.find_peaks(self.rrm[typ].iloc[n]) for n in range(len(self.rrm))]
+        maxheight = [self.rrm[typ].iloc[i][m[0][0]] for i, m in enumerate(maxes)]
+        top_idx = np.argsort(maxheight)[-num:]
+        top_values = [maxheight[i] for i in top_idx]
+        top_seq = [top_seq.append(self.rrm['seq'].iloc[i]) for i in top_idx]
+        if ret =='seq':
+            return dict(zip(top_seq, top_values))
+        top_data = self.p[self.p[self.seq].isin(top_seq)]
+        return top_data
                     
         #@TODO Finish
                 
@@ -237,7 +246,7 @@ class SeqData:
     # @TODO: Import Biopython dicts of matrices, not read from .csvs
     MATR = {
         'PAM30': pd.read_csv('./src_data/pam30.csv', index_col=0).to_dict(),
-        'BLOSUM': pd.read_csv('./src_data/BLOSUM.csv', index_col=0).to_dict(),
+        'BLOSUM45': pd.read_csv('./src_data/BLOSUM.csv', index_col=0).to_dict(),
     }
     DIST = {
         'jaro_winkler': (lambda p1, p2: td.jaro_winkler.normalized_similarity(p1, p2)),
