@@ -6,7 +6,7 @@
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
 \usepackage{biblatex}
-\usepackage{fixltx2e} % provides \textsubscript
+
 \usepackage{unicode-math}
   \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \fi
@@ -71,39 +71,19 @@
 \hypertarget{abstract}{%
 \subsection{Abstract}\label{abstract}}
 
-The purpose of this documentation is to serve as a reference for the
-motivation, background, methods, and results of the GEMSEC project to
-discover the method of signal transduction in human neuropeptides, to
-ultimately discover candidate peptides with binding affinity to
-graphene, as well as to illuminate their mechanism of binding.
+The purpose of this documentation is to serve as a reference for the motivation, background, methods, and results of the GEMSEC project to discover the method of signal transduction in human neuropeptides, to ultimately discover candidate peptides with binding affinity to graphene, as well as to illuminate their mechanism of binding.
 
 \hypertarget{introduction}{%
 \subsection{Introduction}\label{introduction}}
 
-The overarching aim of this project is to uncover the mechanism of
-signal transduction in neuropeptides which are experimentally determined
-to bind to graphene. To determine candidate peptides to be experimented
-on, we have utilized three principal methods: cross-sequence entropy,
-PAM30 sequence similarity, and RRM{[}\^{}1{]} relative to two known
-binders, \emph{GrBP5}{[}\^{}2{]} and \emph{M6}{[}\^{}3{]}
+The overarching aim of this project is to uncover the mechanism of signal transduction in neuropeptides which have been experimentally determined by GEMSEC to bind to graphene. To achieve this goal, we will be using several different measures of peptide similarity to ultimately select three peptides from a set of several thousand neuropeptides to experimentally determine the graphene binding of affinity of, ultimately in the overarching goal of determining the relative efficacy of these techniques highly specified peptide synthesis. To determine candidate peptides to be experimented on, we have utilized three principal methods: cross-sequence entropy, PAM30 sequence similarity, and RRM relative to two known binders, \emph{GrBP5} and \emph{M6}
 
 \hypertarget{background}{%
 \subsection{Background}\label{background}}
 
-While there is extensive literature surrounding the subject of
-peptide-solid binding and its most important determinants, we have
-focused on two primary methods: sequence domain functionality clustering
-and the \emph{Resonant Recognition Model} proposed by Irena Cosic
-{[}\^{}4{]}.
+While there is extensive literature surrounding the subject of peptide-solid binding and its most important determinants, we have focused on two primary methods: sequence domain functionality clustering and the \emph{Resonant Recognition Model} proposed by Irena Cosic.
 
-The \emph{Resonant Recognition Model}, or RRM, is a method proposed by
-Irena Cosic for the analysis of peptides and proteins. The model assumes
-electron-ion interaction potential (EIIP, hereafter) along the backbone
-of amino acid chains to be the most significant deteriminant in a
-peptide or protein's biochemical phenomenological features. For each
-amino acid, a unique scalar EIIP value can be determined, which allows a
-amino acid sequence to be converted to a scalar sequence of EIIP values
-in its most simple form.
+The \emph{Resonant Recognition Model}, or RRM, is a method proposed by Irena Cosic for the analysis of peptides and proteins. The model assumes electron-ion interaction potential (EIIP, hereafter) along the backbone of amino acid chains to be the most significant deteriminant in a peptide or protein's biochemical phenomenological features. For each amino acid, a unique scalar EIIP value can be determined, which allows a amino acid sequence to be converted to a scalar sequence of EIIP values in its most simple form.
 
 \hypertarget{methods}{%
 \subsection{Methods}\label{methods}}
@@ -111,47 +91,30 @@ in its most simple form.
 \hypertarget{rrm}{%
 \paragraph{RRM}\label{rrm}}
 
-The Resonant Recognition Model in particular is a physical signal
-processing which interprets a protein or peptide's biological function
-as primarily determined by the corresponding translation numerical
-sequence of EIIP values, justified by the finding that there is
-significant correlation between the spectra of an amino acid sequence
-represented numericaly and its biological activity {[}\^{}3{]}. In our
-computational studies, we have extended the principle underlying Cosic's
-Resonant Recognition Model to another numerical amino acid mapping,
-itself a representation of the amino acid's most significant biological
-characteristic.
+The Resonant Recognition Model is a theoretical approach in determining protein functionality, proposed by Irena Cosic. The Resonant Recognition Model (hereafter, RRM) posits that the primary determinant of biological or physiochemical functionlity for a protein or peptide lies in the stochastic delocalized electron potential along its carbon backbone. This premise is motivated by the observed high correlation between the spectra of an amino acid sequence represented numerically according to some unique categorical physical functionality and its biological activity. 
 
-From (where?) we used a mapping of the 20 amino acids to seven different
-categories, specifically: aromatic structure, hydrophobic function,
-polar structure, proline (itself), glycine (itself), negative charge,
-positive charge, and Cystine which is excluded (assigned to a separate
-category from all others, like proline and glycine. With the EIIP and
-biological function mapping keys, we were able to derive two unique
-numerical sequences per neuropeptide. From each of these translated
-sequences, following Irena Cosic's RRM construction, we could then
-perform a discrete Fourier transform to determine the spectrum of the
-numerical representation, which generated a characteristic peak in most
-cases which can be considered to be representative of an amino acid
-sequence's biological function.
+The electron-ion interaction potential is determined by the pseudopotential of delocalized electrons along the backbone of the carbon backbone. In this manner, each of the 20 essential amino acids which form the set of neuropeptides to be analyzed are represented by a scalar EIIP value ranging from 0 (Leucine, Ile) to 0.1263 (Asp). These EIIP values are then used to calculate a spectrum unique to each sequence through a Discrete Fourier Transform (DFT) which is calculated, as proposed by Cosic:
 
-Because our experiment is principally concerned with the relative
-similarity of sequences to two known graphene-binding peptide sequences
-(GrBP5 and M6), our initial goal was not to determine the biological
-function responsible for graphene binding, but to downselect three
-neuropeptides for experimentation, after which we could apply
-statistical methods to determine the most likely method of binding in
-the case where the candidates are successfully selected binding
-peptides. As such, we followed Cosic's method to determine the cross
-spectrum of each neuropeptide's EIIP and biological mapping spectra, and
-generated a cross spectra with the EIIP and biological mapping spectra
-of GrBP5 and M6. In this cross spectrum, the signal to noise ratio may
-be considered a primitive measure of ``similarity'' in biological
-function between the two peptides, should the RRM be valid in and of
-itself for determining such a function through characteristic peaks,
-because the S/N measures the degree to which constructive interference
-occurs between the two spectra, indicating similar biological function
-(which, in our case, is the potential to bind to graphene).
+\begin{equation}
+    X(n) = \sum x(m) e^{-j\frac{2nm\pi}{N}} \subset n = 1,2 \dots N/2
+\end{equation}
+
+These DFT coefficients are ultimately calculated for each neuropeptide sequence. Cosic proposes cross-spectral function between EIIP spectra calculated in this manner, which allows for the determination of shared "characteristic peaks" which, depending on the magnitude and signal-to-noise ratio of the peak, allows for one to theoretically determine how similar one peptide's biochemical and physiochemical functionality is to another. This cross spectrum is calculated as follows:
+
+\begin{equation}
+    S(n) = X(n)Y^*(n) \subset n = 1,2 \dots N/2
+\end{equation}
+
+This is implemented in our peptide similarity matrix with a manual DFT implementation corresponding to results which cohere to the DFT spectra in the introductory paper and book on the Resonant Recognition Model by Cosic. We initially attempted to implement the DFT using the NumPy and SciPy FFT packages, but struggled to acquire initial results which corresponded to the DFT and cross spectra in the aforementioned paper and book, so the manual implementation was added in with the help of Sid and Aaron.
+
+In the cross spectrum generated by our manual implementation of the DFT outlined by Cosic, the signal-to-noise ratio, calculated by dividing the peak value (whose frequency, should the peak value be distinct enough from its background, corresponds to its \textit{characteristic frequency}) by the mean of all values in the cross spectrum, can be deemed a measure of similarity between the two peptides whose DFT spectra are used to create the cross spectrum. In this manner, we used both the signal-to-noise ratio of the cross spectrum of each neuropeptide to the two known-binding peptides, as well as the correlation coefficient of each neuropeptide's DFT spectrum to the DFT spectrum of the two known-binding peptides as similarity values in the output similarity matrix for each binding peptide.
+
+\hypertarget{domainmatching}{%
+\paragraph{Sequence-Function Domain Matching}\label{domainmatching}}
+
+From (where?) we used a mapping of the 20 amino acids to seven different categories, specifically: aromatic structure, hydrophobic function, polar structure, proline (itself), glycine (itself), negative charge, positive charge, and Cystine which is excluded (assigned to a separate category from all others, like proline and glycine). We then implemented a function which returned all possible subsequences of each known-binding peptide, and then for each peptide, returned a list of the longest matching subsequences and their indices for each neuropeptide. This was done for explicit amino acid subsequence matches, as well as for subsequence matches indicated by the seven aforementioned bio-functional categories, which, given the limited domain, corresponded to a less discriminatory pattern-matching algorithm for each neuropeptide. Thus, we implemented two columns, one containing a list of amino acid subsequence matches and one for functional encoding matches (as tuples, paired with their index of coincidence), in our output similarity matrix.
+
+We also implemented a primitive scoring algorithm, which assigned a cumulative score of 1 multiplied by each independent subsequence match added to 1.5 multiplied by the length of each subsequence match, which allowed us to assign a scalar magnitude to the subsequence matches found. It is our intention to optimize the weight tuple (instead of using the arbitrary 1 and 1.5 aforementioned weights) used in this scoring method further in the project, and implement more complex scoring based on the weight of each match's functional mapping, some which may carry more information and explanatory power than others.
 
 \hypertarget{string-distance}{%
 \paragraph{String distance}\label{string-distance}}
@@ -161,33 +124,55 @@ Although not the primary aim of our project, in the aim of reasonable comprehens
 \hypertarget{substitution-matrix-similarity}{%
 \paragraph{Substitution Matrix Similarity}\label{substitution-matrix-similarity}}
 
-The PAM (point accepted mutation) matrices, initially developed by Margaret Dayhoff{[}\^{}5{]} are commonly used in measuring the similarity of two peptide or protein sequences. The PAM30 matrix, specifically, is a sequence alignment matrix that allows 30 point accepted per 100 amino acids. The PAM30 matrix is a ``shallow'' sequence alignment matrix, in that it is more appropriate in determining alignment for more ``similar'' sequences.
+The PAM (point accepted mutation) matrices, initially developed by Margaret Dayhoff are commonly used in measuring the similarity of two peptide or protein sequences. The PAM30 matrix, specifically, is a sequence alignment matrix that allows 30 point accepted per 100 amino acids. The PAM30 matrix is a ``shallow'' sequence alignment matrix, in that it is more appropriate in determining alignment for more ``similar'' sequences. 
 
 \hypertarget{results}{%
 \subsection{Results}\label{results}}
 
-Fundamentally, our results were calculated on the basis of two well-established similarity matrices (the PAM30 substitution matrix and the BLOSUM substitution matrix) as well as two key-value lookups associating an amino acid with a scalar quantity representing its notable biological function (in the case of the statistical clustering key:value pairing) or its propensity for electron-ion interaction (in the case of EIIP). Since these latter two methods represent our most novel foray into characterizing peptide similarity, we first determined their correlation to one another. Since the biological function mapping is categorical, and the EIIP mapping is continuous, we utilizd the Kendall Tau correlation parameter (commonly used to compare categorical and continuous data) and found these two mappings to have a correlation (tau) of 0.1129 and corresponding p\_value of 0.5083, indicating very slight agreement.
+Although we implemented several distinct metrics of similarity in our final two output similarity matrices, the initial and primary motivation for the project laid in exploring Irena Cosic's Resonant Recognition Model as a means for determining peptide behavior, especially with regards to self-assembly, and as such, we weighted the signal-to-noise ratio and correlation coefficient metrics garnered from RRM results the highest, and all other similarity metrics are used at the behest of validating and interpreting the RRM results. The sequence-function-domain pattern matching algorithm represents a relatively novel similarity metric, but its full validity cannot be verified without more experimental effort (or a project on its own).
+
+Our ultimate goal in the initial phase of this project is to downselect from the full list of neuropeptides to three candidate peptides, as determined primarily through RRM signal-to-noise as a similarity metric. To this end, we used our manual RRM implementation, and were able to sort all possible peptides by their signal-noise ratio and use other metrics as benchmarks to judge candidacy. Below is the similarity matrix (minus distance values and amino acid encodings, for space purposes):
+
+
+\textbf{\emph{Table 1:}} \emph{Top 5 sequences by RRM S/N ratio}
+\begin{longtable}[]{lllll}
+\toprule
+\textbf{Sequences}& PAM30 & BLOSUM45 & RRM\_SN & RRM\_Corr  \tabularnewline
+\midrule
+\endhead
+INNDCQNFIGNR & -66   & -10      & 5.46    & 0.69 \\
+VPLRPEEDELID & -53   & -3       & 5.42    & 0.65  \\
+LNSLDGAGFGFE & -40   & -2       & 5.42    & 0.89  \\
+RSFGCRFGTCTV & -66   & -18      & 5.39    & 0.64  \\
+SSGGGDGSGMWF & -59   & -14      & 5.27    & 0.78 \\             
+\end{longtable}
+
+\textbf{\emph{Table 2:}} \emph{Top 5 sequences and subsequence matches by RRM S/N ratio}
+\begin{longtable}[]{llll}
+\toprule
+\textbf{Sequences} & RRM\_SN  & sseq\_matches & num\_matches \\ \tabularnewline
+\midrule
+\endhead
+INNDCQNFIGNR  & 5.46   & ('I', 0)      &  ('1', 0), ('22', 5) \\
+VPLRPEEDELID  & 5.42    & ('D', 7)      &  ('1', 0), ('1', 2), ('5', 7) \\
+LNSLDGAGFGFE & 5.42     &              & ('1', 0), ('5', 4), ('0', 8)           \\
+RSFGCRFGTCTV & 5.39    &               & ('2', 10)             \\
+SSGGGDGSGMWF & 5.27   &                     & ('0', 11)                       
+\end{longtable}
+
+
 
 \hypertarget{candidate-peptides}{%
 \paragraph{Candidate peptides}\label{candidate-peptides}}
 
-The five similarity metrics generated for each neuropeptide served as a
-feature set which could be weighted and used to train a regression
-model, but without experimental data, the relative weights for each
-feature were chosen by {[}METHOD{]}.
+The five similarity metrics generated for each neuropeptide served as a feature set which could be weighted and used to train a regression model, but without experimental data, the relative weights for each feature were chosen by {[}METHOD{]}.
 
-After forwarding the candidate peptides for experimentation, we utilized
-statistical clustering and signal processing methods to predict
-determinant sequence domains in graphene binding which could then be
-used with the experimental data once acquired.
+After forwarding the candidate peptides for experimentation, we utilized statistical clustering and signal processing methods to predict determinant sequence domains in graphene binding which could then be used with the experimental data once acquired.
 
 \hypertarget{experimental-results}{%
 \paragraph{Experimental results}\label{experimental-results}}
 
-After generating the list of {[}NUMBER{]} candidate peptides and
-receiving binding affinity metrics, we were then able to perform several
-statistical methods to ascertain the most influential factors in peptide
-graphene binding.
+After generating the list of {[}NUMBER{]} candidate peptides and receiving binding affinity metrics, we were then able to perform several statistical methods to ascertain the most influential factors in peptide graphene binding.
 
 First, we trained a simple linear regression model, using the gathered
 experimental results as training data, and {[}\ldots{}{]}
@@ -195,9 +180,7 @@ experimental results as training data, and {[}\ldots{}{]}
 \hypertarget{signal-transduction}{%
 \paragraph{Signal transduction}\label{signal-transduction}}
 
-From results gathered from model training, statistical clustering, and
-experimental cross-validation, we were able to identify several sequence
-patterns and corresponding functions which may prove significant.
+From results gathered from model training, statistical clustering, and experimental cross-validation, we were able to identify several sequence patterns and corresponding functions which may prove significant.
 {[}\ldots{}{]}
 
 \hypertarget{discussion}{%
@@ -206,11 +189,10 @@ patterns and corresponding functions which may prove significant.
 \hypertarget{computational-results}{%
 \paragraph{Computational results}\label{computational-results}}
 
-Our program, using all aforementioned computational methods, generated
-two ``similarity tables'' for 934,235 {[}@TODO: revise this{]}
-neuropeptides: one for GrBP5, and one for the wild-type peptide M6. This
-generated a table of the schema (example data -- replace with top 10-20
-candidate peptides):
+Our program, using all aforementioned computational methods, generated two similarity matrices for 1,612 same-length neuropeptides: one matrix for similarity values relative to GrBP5, and one for the wild-type peptide M6. The
+
+
+
 
 \textbf{\emph{Table 1:}} \emph{Output schema of .csv similarity tables}
 
