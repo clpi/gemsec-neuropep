@@ -5,6 +5,8 @@
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
+\usepackage{biblatex}
+
 \usepackage{unicode-math}
   \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
 \fi
@@ -29,7 +31,6 @@
 \usepackage{longtable,booktabs}
 % Fix footnotes in tables (requires footnote package)
 \IfFileExists{footnote.sty}{\usepackage{footnote}\makesavenoteenv{longtable}}{}
-
 \setlength{\emergencystretch}{3em}  % prevent overfull lines
 \providecommand{\tightlist}{%
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
@@ -43,6 +44,7 @@
 \let\oldsubparagraph\subparagraph
 \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\addbibresource{docs.bib}
 % set default figure placement to htbp
 \makeatletter
 \def\fps@figure{htbp}
@@ -145,38 +147,26 @@ IMVTASSAYDDY & 111212210550 & [27.3, 84.4, 93.5, 0, 59.1, 100]\tabularnewline
 \bottomrule
 \end{longtable}
 
-Our ultimate goal in the initial phase of this project is to downselect from the full list of neuropeptides to three candidate peptides, as determined principally through the calculation of cross-spectral signal-to-noise as an alias for peptide similarity. To this end, we used our manual RRM implementation to generate the aforementioned metric (column titled RRM SN in output matrices), and sorted all peptides by their signal-noise ratio with the known-binding peptide of interest, using other metrics as secondary benchmarks to judge candidacy. Below is the similarity matrix for the top five sequences, sorted by signal-to-noise ratio (minus distance values and amino acid encodings -- PAM30 and BLOSUM45 scores scaled from 0 to 1):
+Our ultimate goal in the initial phase of this project is to downselect from the full list of neuropeptides to three candidate peptides, as determined principally through the calculation of cross-spectral signal-to-noise as an alias for peptide similarity. To this end, we used our manual RRM implementation to generate the aforementioned metric (column titled RRM SN in output matrices), and sorted all peptides by their signal-noise ratio with the known-binding peptide of interest, using other metrics as secondary benchmarks to judge candidacy. Below is the similarity matrix for the top five sequences, sorted by signal-to-noise ratio (minus distance values and amino acid encodings):
 
 
-\textbf{\emph{Table 2a:}} \emph{Top 5 sequences by RRM S/N ratio as similarity to GrBP5}
+\textbf{\emph{Table 1:}} \emph{Top 5 sequences by RRM S/N ratio}
 \begin{longtable}[]{lllll}
 \toprule
 \textbf{Sequences}& PAM30 & BLOSUM45 & RRM\_SN & RRM\_Corr  \tabularnewline
 \midrule
 \endhead
-INNDCQNFIGNR & 0.359   & 0.370      & 5.46    & 0.69 \\
-VPLRPEEDELID & 0.485   & 0.522       & 5.42    & 0.65  \\
-LNSLDGAGFGFE & 0.612   & 0.543       & 5.42    & 0.89  \\
-RSFGCRFGTCTV & 0.359   & 0.196      & 5.39    & 0.64  \\
-SSGGGDGSGMWF & 0.427   & 0.283      & 5.27    & 0.78 \\             
-\end{longtable}
-
-\textbf{\emph{Table 2b:}} \emph{Top 5 sequences by RRM S/N ratio as similarity to M6}
-\begin{longtable}[]{lllll}
-\toprule
-\textbf{Sequences}& PAM30 & BLOSUM45 & RRM\_SN & RRM\_Corr  \tabularnewline
-\midrule
-\endhead
-PQNWNKLNSLWG & 0.233   & 0.174      & 4.76    & 0.25 \\
-SGLMSEGSSLEA & 0.398   & 0.348       & 4.56    & 0.52  \\
-SKYVSKQKFYSW & 0.612   & 0.630       & 4.44    & 0.93  \\
-NSLLGIPKVMND & 0.427   & 0.283      & 4.33    & 0.71  \\
-NSILGLPKVMND & 0.456   & 0.326      & 4.33    & 0.71 \\             
+INNDCQNFIGNR & -66   & -10      & 5.46    & 0.69 \\
+VPLRPEEDELID & -53   & -3       & 5.42    & 0.65  \\
+LNSLDGAGFGFE & -40   & -2       & 5.42    & 0.89  \\
+RSFGCRFGTCTV & -66   & -18      & 5.39    & 0.64  \\
+SSGGGDGSGMWF & -59   & -14      & 5.27    & 0.78 \\             
 \end{longtable}
 
 It was generally observed that RRM cross-spectral signal-to-noise demonstrated low correlation towards most other metrics of similarity (see table 3). Furthermore, in Cosic's introduction to the RRM, a signal-to-noise ratio above 20 was deemed to be notable -- however, given that the signal in her examples (human alpha, beta hemoglobin) were presumed to be many magnitudes higher in length (dealing with proteins, rather than short-length peptides), it is expected that the signal-to-noise ratio would be less meaningful in our signals which are relatively protracted in length (on the order of 10s versus 100s).
 
-\textbf{\emph{Table 3:}} \emph{Correlation matrix of similarity measures for GrBP5, minus string distance}
+\begin{center}
+\textbf{\emph{Table 2:}} \emph{Correlation matrix of similarity measures, minus string distance}
 \begin{longtable}[]{lllllll}
 \toprule
  & PAM30 & BLOSUM45 & RRM\_SN & RRM\_Corr & sseq\_score & num\_score \\
@@ -189,10 +179,11 @@ RRM\_Corr & 0.01 & 0.01 & 0.52 & 1.0 & 0.05 & 0.05 \\
 sseq\_score & 0.59 & 0.64 & 0.06 & 0.05 & 1.0 & 0.43 \\
 num\_score & 0.63 & 0.70 & 0.07 & 0.05 & 0.43 & 1.0
 \end{longtable}
+\end{center}
 
-However, given that we were most interested in using RRM metrics alongside sequence-domain pattern matching metrics, we decided to observe common sequence motifs among those peptides who had higher cross-spectral signal-to-noise relative to their counterparts, and found that, while some common patterns existed among those neuropeptides with the highest cross-spectral signal-to-noise with regards to a known-binding peptide, there was not enough information to fully conclude that any particular subsequence motif or functional encoding motif would provide any significant insight.
+However, given that we were most interested in using RRM metrics alongside sequence-domain pattern matching metrics, we decided to observe common sequence motifs among those peptides who had higher cross-spectral signal-to-noise relative to their counterparts, and found that, while some common patterns existed, it was not wholly significant.
 
-\textbf{\emph{Table 4a:}} \emph{Top 5 sequences and subsequence matches to GrBP5 by RRM S/N ratio}
+\textbf{\emph{Table 3:}} \emph{Top 5 sequences and subsequence matches by RRM S/N ratio}
 \begin{longtable}[]{llll}
 \toprule
 \textbf{Sequences} & RRM\_SN  & sseq\_matches & num\_matches \\ \tabularnewline
@@ -205,81 +196,28 @@ RSFGCRFGTCTV & 5.39    &               & ('2', 10)             \\
 SSGGGDGSGMWF & 5.27   &                     & ('0', 11)                       
 \end{longtable}
 
-\textbf{\emph{Table 4b:}} \emph{Top 5 sequences and subsequence matches to M6 by RRM S/N ratio}
-\begin{longtable}[]{llll}
-\toprule
-\textbf{Sequences} & RRM\_SN  & sseq\_matches & num\_matches \\ \tabularnewline
-\midrule
-\endhead
-PQNWNKLNSLWG & 4.76 &  &  \\
-SGLMSEGSSLEA & 4.56 &  & ('1', 2), ('5', 10) \\
-SKYVSKQKFYSW & 4.44 &  & ('2', 6), ('0', 8), ('0', 11) \\
-NSLLGIPKVMND & 4.33 &  & ('1', 2) \\
-NSILGLPKVMND & 4.33 &  & ('1', 2)           
-\end{longtable}
 
-It is readily apparent that in producing DFT and cross spectra for peptides signals so protracted in length relative to the proteins typically used as input for RRM analysis, we would find many superficially similar patterns amongst those scoring highest in cross-spectral signal-to-noise, without any shared function necessarily being an explanatory factor (moreso than mere coincidence). Forgoing a significant analytical deep-dive into the RRM spectra characteristic frequencies as a means of determining specific functionality (as Cosic proposes), in the ultimate aim of selecting three peptides to forward for further experimental analysis for graphene-binding affinity, we simply joined the M6 and GrBP5 similarity matrices and filtered for high signal-to-noise for both binding peptides first, and for respective bio-functional encoding subsequence matches second, to produce a list of peptides which were deemed to be sufficiently similar in both bio-functional encoding pattern matching as well as cross-spectral similarity to both peptides to ultimately determine which three peptides to forward for further experimentation. 
 
 \hypertarget{candidate-peptides}{%
 \paragraph{Candidate peptides}\label{candidate-peptides}}
 
-The five similarity metrics generated for each neuropeptide served as a feature set which could be weighted and used to train a regression model, but without experimental data, the relative weights for each feature were chosen in a manner relatively more primitive, while still taking into account the cross-spectral signal-to-noise ratio for all neuropeptides with both GrBP5 and M6, as well as the subsequence pattern matches for both the aforementioned known-binding peptides. We considered briefly using the bio-functional encoding pattern matches as an additional criterion to the RRM signal-to-noise instead of subsequence matching, however, we felt that, in absence of any justifiable reason to apply less discrimination in determining only three candidate peptides, we would forgo the option (the resultant top 10 peptides using bio-functional encoding score are listed in the Appendex as Table 2a and Table 2b). 
+The five similarity metrics generated for each neuropeptide served as a feature set which could be weighted and used to train a regression model, but without experimental data, the relative weights for each feature were chosen by {[}METHOD{]}.
 
-To do this, we simply merged the two similarity matrices, and created a new column which was the product of the average signal-to-noise ratio between each neuropeptide with GrBP5 and M6 (half of the summation of each respective RRM SNR) and the average subsequence match score between both GrBP5 and M6. The merged similarity matrix was then sorted by this new derived column to produce peptides which had high RRM signal-to-noise similarity to both M6 and GrBP5 while also having high numbers subsequence pattern matches for both M6 and GrBP5. From this metric, we found the top 10 neuropeptides to be as follows.
-
-\textbf{\emph{Table 5a:}} \emph{Top 10 sequences by RRM SN and subsequence match score}
-\begin{longtable}[]{lllll}
-\toprule
-\textbf{Sequences}& RRM SN GrBP5 & RRM SN M6 & Score GrBP5 & Score M6  \tabularnewline
-\midrule
-\endhead
-IGVRKSARKWNN & 3.9643732569500365 & 3.4386167986056866 & 6 & 6 \\
-LDLTPGSHVDSY & 3.737484646877938 & 1.9401406448554996 & 7 & 8 \\
-LTLTPGSHVDSY & 3.6612996255277976 & 1.7621098413241925 & 7 & 8 \\
-FDRISNSAFSDF & 4.290469373065538 & 3.49429975994587 & 4 & 5 \\
-FDRISSSAFSDF & 4.835410960463124 & 2.398641048540137 & 3 & 6 \\
-SGDTSSQAKGMW & 3.6353709793420013 & 2.7674157609153496 & 4 & 6 \\
-QLSEDASKVITY & 4.312190671490123 & 3.673904521769156 & 4 & 4 \\
-YDRISNSAFSDF & 4.116755702909698 & 2.9028797282910577 & 4 & 5 \\
-YDRISGSAFSDF & 4.125806287602751 & 2.8817836385812985 & 4 & 5 \\
-IFLPGSVILRAL & 5.073675546565263 & 2.724680915699252 & 4 & 4
-\end{longtable}
-
-\textbf{\emph{Table 5b:}} \emph{Top 10 sequences by RRM SN and bio-functional encoding match score with specific encoding matches}
-\begin{longtable}[]{llll}
-\toprule
-\textbf{Sequences} & num\_matches\_grbp5 & num\_matches\_m6 \\ \tabularnewline
-\midrule
-\endhead
-IGVRKSARKWNN & {[}('I', 0), ('V', 2), ('S', 5){]} & {[}('I', 0), ('V', 2), ('S', 5){]} \\
-LDLTPGSHVDSY & {[}('T', 3), ('S', 6), ('SY', 10){]} & {[}('T', 3), ('S', 6), ('D', 9), ('Y', 11){]} \\
-LTLTPGSHVDSY & {[}('T', 3), ('S', 6), ('SY', 10){]} & {[}('T', 3), ('S', 6), ('D', 9), ('Y', 11){]} \\
-FDRISNSAFSDF & {[}('S', 6), ('S', 9){]} & {[}('SA', 6), ('D', 10){]} \\
-FDRISSSAFSDF & {[}('SS', 5){]} & {[}('SSA', 5), ('D', 10){]} \\
-SGDTSSQAKGMW & {[}('T', 3), ('S', 5){]} & {[}('T', 3), ('S', 5), ('A', 7){]} \\
-QLSEDASKVITY & {[}('S', 6), ('Y', 11){]} & {[}('S', 6), ('Y', 11){]} \\
-YDRISNSAFSDF & {[}('S', 6), ('S', 9){]} & {[}('SA', 6), ('D', 10){]} \\
-YDRISGSAFSDF & {[}('S', 6), ('S', 9){]} & {[}('SA', 6), ('D', 10){]} \\
-IFLPGSVILRAL & {[}('I', 0), ('S', 5){]} & {[}('I', 0), ('S', 5){]}
-\end{longtable}
-
-Given more time to prepare the code for generating similarity based on subsequence matching as a supplement to RRM signal-to-noise calculations, it would perhaps have been beneficial to implement a more nuanced subsequence scoring metric, which takes into account locations of matches and scores each match uniquely depending on the index of matching, in the case of certain peptide locations influencing the mechanism of binding moreso than others.
-
-After forwarding the candidate peptides for experimentation, we plan to utilize statistical clustering and signal processing methods to predict determinant sequence domains in graphene binding which could then be used with the experimental data once acquired.
+After forwarding the candidate peptides for experimentation, we utilized statistical clustering and signal processing methods to predict determinant sequence domains in graphene binding which could then be used with the experimental data once acquired.
 
 \hypertarget{experimental-results}{%
 \paragraph{Experimental results}\label{experimental-results}}
 
-After generating the list of NUMBER candidate peptides and receiving binding affinity metrics, we were then able to perform several statistical methods to ascertain the most influential factors in peptide graphene binding.
+After generating the list of {[}NUMBER{]} candidate peptides and receiving binding affinity metrics, we were then able to perform several statistical methods to ascertain the most influential factors in peptide graphene binding.
 
 First, we trained a simple linear regression model, using the gathered
-experimental results as training data, and \ldots{}
+experimental results as training data, and {[}\ldots{}{]}
 
 \hypertarget{signal-transduction}{%
 \paragraph{Signal transduction}\label{signal-transduction}}
 
 From results gathered from model training, statistical clustering, and experimental cross-validation, we were able to identify several sequence patterns and corresponding functions which may prove significant.
-\ldots{}
+{[}\ldots{}{]}
 
 \hypertarget{discussion}{%
 \subsection{Discussion}\label{discussion}}
@@ -287,21 +225,57 @@ From results gathered from model training, statistical clustering, and experimen
 \hypertarget{computational-results}{%
 \paragraph{Computational results}\label{computational-results}}
 
-Our program, using all aforementioned computational methods, generated two similarity matrices for 1,612 same-length neuropeptides: one matrix for similarity values relative to GrBP5, and one for the wild-type peptide M6. 
+Our program, using all aforementioned computational methods, generated two similarity matrices for 1,612 same-length neuropeptides: one matrix for similarity values relative to GrBP5, and one for the wild-type peptide M6. The
 
-From this data, we determined that \ldots{}
+
+
+
+
+
+Where the columns correspond as follows:
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{seq}: Original amino acid sequence of the neuropeptide
+\item
+  \textbf{numseq}: The original amino acid sequence converted to numbers
+  corresponding to their biological function as determined by the
+  biological function key-value table{[}\^{}6{]}
+\item
+  \textbf{rrmsn}: The signal-to-noise ratio of the cross-signal of the
+  EIIP frequency spectum calculated for a given neuropeptide and the
+  sequence of comparison, normalized in the domain {[}0, 100{]}.
+\item
+  \textbf{rrmcor}: The Pearson correlation coefficient between the EIIP
+  frequency spectrum calculated for a given neuropeptide and the
+  sequence of comparison, mapped to the domain {[}0, 100{]}
+\item
+  \textbf{pam30}: The PAM30 similarity score (formula described in
+  methods section); a measure of inverse distance using the PAM30
+  matrix, mapped to {[}0, 100{]}
+\item
+  \textbf{numentr}: The cross-entropy of the numerical sequence
+  represencted by \texttt{numseq}
+\item
+  \textbf{aaentr}: The cross-entropy of the amino acid sequence
+\end{itemize}
+
+From this data, we determined that {[}\ldots{}{]}
 
 \hypertarget{experimental-results-1}{%
 \paragraph{Experimental results}\label{experimental-results-1}}
 
-To be completed after experimentaiton
+{[}to be completed after experimentaiton{]}
 
 \hypertarget{clustering-and-signal-analysis}{%
 \paragraph{Clustering and signal
 analysis}\label{clustering-and-signal-analysis}}
 
-After gathering the experimental results, we were then able to apply supervised statistical learning techniques to the full set of neuropeptides (including those of different length to the input known-binding peptides), as well as signal processing techniques. We first
-\ldots{}
+After gathering the experimental results, we were then able to apply
+supervised statistical learning techniques to the full set of
+neuropeptides, as well as signal processing techniques. We first
+{[}\ldots{}{]}
 
 \hypertarget{how-to-run}{%
 \subsection{How to run}\label{how-to-run}}
@@ -319,7 +293,7 @@ instructions for their installation will be listed below.
 \def\labelenumi{\arabic{enumi}.}
 \item
   Download the \href{http://google.com}{.zip containing all .py files
-  and sample data set} \textbf{!FIX} and extract to preferred
+  and sample data set} \textbf{{[}!FIX{]}} and extract to preferred
   location.
 \item
   Open a terminal and navigate to the directory containing the extracted
@@ -418,60 +392,20 @@ Excluded & C & 7 & 0.0829\tabularnewline
 \bottomrule
 \end{longtable}
 
-\textbf{\emph{Table 2a:}} \emph{Top 10 sequences by RRM SN and bio-functional encoding match score}
-\begin{longtable}[]{lllll}
-\toprule
-\textbf{Sequences}& RRM SN GrBP5 & RRM SN M6 & Score GrBP5 & Score M6  \tabularnewline
-\midrule
-\endhead
-LFADVSTIGDFF & 3.90 & 2.12 & 9 & 13 \\
-LNSLDGQGFGFE & 5.16 & 4.07 & 8 & 6 \\
-ALNSLDGAGFGF & 4.74 & 3.72 & 7 & 8 \\
-VVLGKKQRFHSW & 3.31 & 2.73 & 11 & 10 \\
-ALNSLDGNGFGF & 4.69 & 3.72 & 7 & 8 \\
-ALNSLDGQGFGF & 4.72 & 3.67 & 7 & 8 \\
-AGNSGANSGMWF & 4.88 & 2.89 & 8 & 8 \\
-AGGTGANSAMWF & 4.91 & 2.78 & 8 & 8 \\
-ALADEHNDNFLR & 5.04 & 3.11 & 9 & 6 \\
-LADEHNDNFLRF & 4.01 & 2.73 & 9 & 9    
-\end{longtable}
-
-\textbf{\emph{Table 2b:}} \emph{Top 10 sequences by RRM SN and bio-functional encoding match score with specific encoding matches}
-\begin{longtable}[]{llll}
-\toprule
-\textbf{Sequences} & num\_matches\_grbp5 & num\_matches\_m6 \\ \tabularnewline
-\midrule
-\endhead
-LFADVSTIGDFF & ('1', 0), ('1', 2), ('22', 5), ('0', 11) & ('1', 0), ('1', 2), ('1221', 4), ('5', 9), ('0', 11) \\
-LNSLDGQGFGFE & ('1', 0), ('5', 4), ('2', 6), ('0', 8) & ('1', 0), ('2', 6), ('0', 8) \\
-ALNSLDGAGFGF & ('11', 0), ('2', 3), ('0', 11) & ('11', 0), ('21', 3), ('0', 11) \\
-VVLGKKQRFHSW & ('111', 0), ('2', 6), ('0', 8), ('20', 10) & ('111', 0), ('2', 6), ('0', 8), ('0', 11) \\
-ALNSLDGNGFGF & ('11', 0), ('2', 3), ('0', 11) & ('11', 0), ('21', 3), ('0', 11) \\
-ALNSLDGQGFGF & ('11', 0), ('2', 3), ('0', 11) & ('11', 0), ('21', 3), ('0', 11) \\
-AGNSGANSGMWF & ('1', 0), ('2', 3), ('2', 6), ('0', 11) & ('1', 0), ('2', 3), ('2', 6), ('0', 11) \\
-AGGTGANSAMWF & ('1', 0), ('2', 3), ('2', 6), ('0', 11) & ('1', 0), ('2', 3), ('2', 6), ('0', 11) \\
-ALADEHNDNFLR & ('111', 0), ('5', 4), ('25', 6) & ('111', 0), ('2', 6) \\
-LADEHNDNFLRF & ('11', 0), ('2', 5), ('0', 8), ('0', 11) & ('11', 0), ('2', 5), ('0', 8), ('0', 11)
-\end{longtable}
-
 \hypertarget{bibliography}{%
 \subsection{Bibliography}\label{bibliography}}
 
 
 
-
-\bibliographystyle{plainnat}
-\bibliography{docs}
-
 \end{document}
 
 
 
-1\^{} https://www.ncbi.nlm.nih.gov/pubmed/7851912 (EIIP
+{[}1\^{}{]} https://www.ncbi.nlm.nih.gov/pubmed/7851912 (EIIP
 representation)
 
-2\^{} https://www.aclweb.org/anthology/J06-4002.pdf (kendall tau,
+{[}2\^{}{]} https://www.aclweb.org/anthology/J06-4002.pdf (kendall tau,
 nlp, similarity?)
 
-3\^{}
+{[}3\^{}{]}
 https://nonlinearbiomedphys.biomedcentral.com/articles/10.1186/1753-4631-1-7

@@ -1,0 +1,11 @@
+Sequences,sseq_matches_grbp5,sseq_matches_m6
+IGVRKSARKWNN,"[('I', 0), ('V', 2), ('S', 5)]","[('I', 0), ('V', 2), ('S', 5)]"
+LDLTPGSHVDSY,"[('T', 3), ('S', 6), ('SY', 10)]","[('T', 3), ('S', 6), ('D', 9), ('Y', 11)]"
+LTLTPGSHVDSY,"[('T', 3), ('S', 6), ('SY', 10)]","[('T', 3), ('S', 6), ('D', 9), ('Y', 11)]"
+FDRISNSAFSDF,"[('S', 6), ('S', 9)]","[('SA', 6), ('D', 10)]"
+FDRISSSAFSDF,"[('SS', 5)]","[('SSA', 5), ('D', 10)]"
+SGDTSSQAKGMW,"[('T', 3), ('S', 5)]","[('T', 3), ('S', 5), ('A', 7)]"
+QLSEDASKVITY,"[('S', 6), ('Y', 11)]","[('S', 6), ('Y', 11)]"
+YDRISNSAFSDF,"[('S', 6), ('S', 9)]","[('SA', 6), ('D', 10)]"
+YDRISGSAFSDF,"[('S', 6), ('S', 9)]","[('SA', 6), ('D', 10)]"
+IFLPGSVILRAL,"[('I', 0), ('S', 5)]","[('I', 0), ('S', 5)]"
