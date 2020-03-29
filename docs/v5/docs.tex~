@@ -1,4 +1,4 @@
-\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
+\underline{}\PassOptionsToPackage{unicode=true}{hyperref} % options for packages loaded elsewhere
 \PassOptionsToPackage{hyphens}{url}
 %
 \documentclass[]{article}
